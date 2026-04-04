@@ -215,6 +215,25 @@ button.primary:hover {
     font-size: 0.8rem;
     font-weight: 700;
     margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.telem-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    opacity: 0.5;
+    transition: opacity 0.15s, color 0.15s;
+}
+.telem-close:hover {
+    opacity: 1;
+    color: var(--danger);
 }
 
 .telem-panel-row {

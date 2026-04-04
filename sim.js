@@ -558,9 +558,20 @@
         panel.className = "telem-panel";
         panel.style.borderLeftColor = p.color;
         panel.innerHTML =
-            '<div class="telem-panel-header" style="color:' + p.color + '">#' + p.id + '</div>' +
+            '<div class="telem-panel-header" style="color:' + p.color + '">' +
+                '#' + p.id +
+                '<button class="telem-close" title="Remove">&times;</button>' +
+            '</div>' +
             '<div class="telem-panel-row"><span class="telem-label">Velocity</span><span class="telem-value" id="telemVel-' + p.id + '">—</span></div>' +
             '<div class="telem-panel-row"><span class="telem-label">Altitude</span><span class="telem-value" id="telemAlt-' + p.id + '">—</span></div>';
+        panel.querySelector(".telem-close").addEventListener("click", () => {
+            const idx = projectiles.findIndex(proj => proj.id === p.id);
+            if (idx !== -1) projectiles.splice(idx, 1);
+            panel.remove();
+            if (projectiles.length === 0) {
+                telemetrySection.style.display = "none";
+            }
+        });
         telemetryContainer.appendChild(panel);
         return panel;
     }
