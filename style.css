@@ -15,6 +15,23 @@
     --danger: #ef4444;
     --success: #22c55e;
     --warning: #eab308;
+
+    /* ── Panel sizing presets (tweak these) ── */
+    --panel-width: 340px;
+    --panel-padding: 20px 16px;
+    --panel-gap: 6px;
+    --group-padding: 12px;
+    --group-heading-size: 0.7rem;
+    --group-heading-mb: 8px;
+    --label-font-size: 0.82rem;
+    --label-mb: 8px;
+    --slider-height: 5px;
+    --slider-thumb: 14px;
+    --btn-padding: 6px 10px;
+    --btn-font-size: 0.78rem;
+    --preset-padding: 8px 10px;
+    --preset-name-size: 0.8rem;
+    --preset-detail-size: 0.7rem;
 }
 
 html, body {
@@ -33,15 +50,15 @@ html, body {
 /* ── Side Panel ── */
 
 #controls {
-    width: 340px;
-    min-width: 340px;
+    width: var(--panel-width);
+    min-width: var(--panel-width);
     background: var(--panel);
     border-right: 1px solid var(--panel-border);
-    padding: 24px 20px;
+    padding: var(--panel-padding);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--panel-gap);
 }
 
 #controls h1 {
@@ -60,27 +77,27 @@ html, body {
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--panel-border);
     border-radius: 10px;
-    padding: 16px;
+    padding: var(--group-padding);
 }
 
 .control-group h2 {
-    font-size: 0.75rem;
+    font-size: var(--group-heading-size);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-dim);
-    margin-bottom: 12px;
+    margin-bottom: var(--group-heading-mb);
 }
 
 label {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: var(--label-mb);
 }
 
 .label-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
+    font-size: var(--label-font-size);
+    margin-bottom: 4px;
 }
 
 .value-display {
@@ -93,7 +110,7 @@ label {
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 6px;
+    height: var(--slider-height);
     border-radius: 3px;
     background: #1e293b;
     outline: none;
@@ -101,8 +118,8 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
+    width: var(--slider-thumb);
+    height: var(--slider-thumb);
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
@@ -116,8 +133,8 @@ button {
     border-radius: 8px;
     background: rgba(255,255,255,0.05);
     color: var(--text);
-    font-size: 0.82rem;
-    padding: 8px 12px;
+    font-size: var(--btn-font-size);
+    padding: var(--btn-padding);
     transition: all 0.15s;
 }
 
@@ -146,16 +163,16 @@ button.primary:hover {
 
 .preset {
     text-align: left;
-    padding: 10px 12px;
+    padding: var(--preset-padding);
 }
 
 .preset strong {
     display: block;
-    font-size: 0.85rem;
+    font-size: var(--preset-name-size);
 }
 
 .preset span {
-    font-size: 0.75rem;
+    font-size: var(--preset-detail-size);
     color: var(--text-dim);
 }
 
