@@ -7,6 +7,114 @@
     const GM = G * M;              // standard gravitational parameter
     const R  = 6.371e6;            // Earth radius (m)
 
+    // ── Internationalization ──
+    const LOCALES = {
+        en: {
+            // Page
+            title: "Newton's Cannon",
+
+            // Headings
+            headingLaunch:    "Launch Parameters",
+            headingSim:       "Simulation",
+            headingTelemetry: "Telemetry",
+            headingPresets:   "Presets",
+
+            // Labels
+            labelSpeed:     "Speed",
+            labelAltitude:  "Altitude above surface",
+            labelTimeScale: "Time scale",
+
+            // Buttons
+            btnLaunch: "Launch",
+            btnClear:  "Clear Traces",
+            btnReset:  "Reset View",
+
+            // Canvas
+            cannon: "Cannon",
+
+            // Telemetry
+            telemVelocity: "Velocity",
+            telemAltitude: "Altitude",
+            telemRemove:   "Remove",
+
+            // Preset labels
+            presetSuborbital:     "Suborbital",
+            presetCircular:       "Circular",
+            presetParabolic:      "Parabolic",
+            presetEllipticalLow:  "Elliptical (low)",
+            presetEllipticalHigh: "Elliptical (high)",
+
+            // Preset descriptions
+            descSuborbital:     "Half of orbital velocity",
+            descCircular:       "Circular orbit at this altitude",
+            descParabolic:      "Escape velocity at this altitude",
+            descEllipticalLow:  "Periapsis at planet surface",
+            descEllipticalHigh: "Apoapsis at 2× launch radius",
+
+            // Orbit classification
+            orbitSuborbital:   "Suborbital",
+            orbitLowElliptic:  "Low elliptical orbit",
+            orbitCircular:     "Near-circular orbit",
+            orbitElliptic:     "Elliptical orbit",
+            orbitNearEscape:   "Near-escape trajectory",
+            orbitParabolic:    "Escape — parabolic",
+            orbitHyperbolic:   "Hyperbolic escape",
+
+            // Language toggle
+            langLabel: "EN",
+        },
+        cs: {
+            title: "Newtonův kanón",
+
+            headingLaunch:    "Parametry startu",
+            headingSim:       "Simulace",
+            headingTelemetry: "Telemetrie",
+            headingPresets:   "Předvolby",
+
+            labelSpeed:     "Rychlost",
+            labelAltitude:  "Výška nad povrchem",
+            labelTimeScale: "Časové měřítko",
+
+            btnLaunch: "Start",
+            btnClear:  "Smazat stopy",
+            btnReset:  "Obnovit pohled",
+
+            cannon: "Kanón",
+
+            telemVelocity: "Rychlost",
+            telemAltitude: "Výška",
+            telemRemove:   "Odstranit",
+
+            presetSuborbital:     "Suborbitální",
+            presetCircular:       "Kruhová",
+            presetParabolic:      "Parabolická",
+            presetEllipticalLow:  "Eliptická (nízká)",
+            presetEllipticalHigh: "Eliptická (vysoká)",
+
+            descSuborbital:     "Polovina orbitální rychlosti",
+            descCircular:       "Kruhová orbita v této výšce",
+            descParabolic:      "Úniková rychlost v této výšce",
+            descEllipticalLow:  "Periapsis na povrchu planety",
+            descEllipticalHigh: "Apoapsis ve 2× poloměru startu",
+
+            orbitSuborbital:   "Suborbitální",
+            orbitLowElliptic:  "Nízká eliptická orbita",
+            orbitCircular:     "Téměř kruhová orbita",
+            orbitElliptic:     "Eliptická orbita",
+            orbitNearEscape:   "Téměř úniková trajektorie",
+            orbitParabolic:    "Únik — parabolický",
+            orbitHyperbolic:   "Hyperbolický únik",
+
+            langLabel: "CZ",
+        },
+    };
+
+    let currentLocale = "en";
+
+    function t(key) {
+        return LOCALES[currentLocale][key] || LOCALES.en[key] || key;
+    }
+
     // ── Canvas setup ──
     const canvas = document.getElementById("simCanvas");
     const ctx    = canvas.getContext("2d");
@@ -149,9 +257,12 @@
     };
 
     // Apply icons and tooltips to buttons
-    launchBtn.textContent = BUTTON_ICONS.launch + " Launch";
-    clearBtn.textContent  = BUTTON_ICONS.clear  + " Clear Traces";
-    resetBtn.textContent  = BUTTON_ICONS.reset  + " Reset View";
+    function applyButtonLabels() {
+        launchBtn.textContent = BUTTON_ICONS.launch + " " + t("btnLaunch");
+        clearBtn.textContent  = BUTTON_ICONS.clear  + " " + t("btnClear");
+        resetBtn.textContent  = BUTTON_ICONS.reset  + " " + t("btnReset");
+    }
+    applyButtonLabels();
 
     launchBtn.title = TOOLTIPS.launch;
     clearBtn.title  = TOOLTIPS.clear;
@@ -169,20 +280,20 @@
         "elliptical-high": "📈",
     };
 
-    const PRESET_LABELS = {
-        "suborbital":      "Suborbital",
-        "v1":              "Circular",
-        "v2":              "Parabolic",
-        "elliptical-low":  "Elliptical (low)",
-        "elliptical-high": "Elliptical (high)",
+    const PRESET_LABEL_KEYS = {
+        "suborbital":      "presetSuborbital",
+        "v1":              "presetCircular",
+        "v2":              "presetParabolic",
+        "elliptical-low":  "presetEllipticalLow",
+        "elliptical-high": "presetEllipticalHigh",
     };
 
-    const presetDescriptions = {
-        "suborbital":     "Half of orbital velocity",
-        "v1":             "Circular orbit at this altitude",
-        "v2":             "Escape velocity at this altitude",
-        "elliptical-low": "Periapsis at planet surface",
-        "elliptical-high":"Apoapsis at 2× launch radius",
+    const PRESET_DESC_KEYS = {
+        "suborbital":      "descSuborbital",
+        "v1":              "descCircular",
+        "v2":              "descParabolic",
+        "elliptical-low":  "descEllipticalLow",
+        "elliptical-high": "descEllipticalHigh",
     };
 
     function updatePresets() {
@@ -194,9 +305,9 @@
             const speed_km = speed_ms / 1000;
             btn.dataset.speed = speed_km.toFixed(2);
             btn.querySelector("strong").textContent =
-                PRESET_ICONS[type] + " " + PRESET_LABELS[type];
+                PRESET_ICONS[type] + " " + t(PRESET_LABEL_KEYS[type]);
             btn.querySelector("span").textContent =
-                speed_km.toFixed(1) + " km/s — " + presetDescriptions[type];
+                speed_km.toFixed(1) + " km/s — " + t(PRESET_DESC_KEYS[type]);
         });
     }
 
@@ -217,6 +328,49 @@
     const projectiles = [];   // each: { id, trail, x, y, vx, vy, alive, color, label }
     let nextProjectileId = 1;
 
+    // ── Language toggle ──
+    const langToggle = document.getElementById("langToggle");
+    const LANG_CYCLE = Object.keys(LOCALES);
+
+    function setLocale(lang) {
+        currentLocale = lang;
+        document.documentElement.lang = lang;
+
+        // Static data-i18n elements
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            el.textContent = t(el.dataset.i18n);
+        });
+
+        // Buttons
+        applyButtonLabels();
+
+        // Presets
+        updatePresets();
+
+        // Rebuild existing telemetry panels
+        for (const p of projectiles) {
+            const panel = document.getElementById("telem-" + p.id);
+            if (!panel) continue;
+            const labels = panel.querySelectorAll(".telem-label");
+            if (labels[0]) labels[0].textContent = t("telemVelocity");
+            if (labels[1]) labels[1].textContent = t("telemAltitude");
+            const closeBtn = panel.querySelector(".telem-close");
+            if (closeBtn) closeBtn.title = t("telemRemove");
+        }
+
+        // Toggle button label
+        langToggle.textContent = t("langLabel");
+    }
+
+    langToggle.addEventListener("click", () => {
+        const idx = LANG_CYCLE.indexOf(currentLocale);
+        const next = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
+        setLocale(next);
+    });
+
+    // Initialize locale
+    setLocale(currentLocale);
+
     const trailColors = [
         "#3b82f6", "#22c55e", "#eab308", "#ef4444",
         "#a855f7", "#ec4899", "#06b6d4", "#f97316",
@@ -227,13 +381,13 @@
         const r = R + alt_km * 1000;
         const v1 = Math.sqrt(GM / r) / 1000;
         const v2 = Math.sqrt(2 * GM / r) / 1000;
-        if (speed_km < v1 * 0.65) return { label: "Suborbital", color: "#ef4444" };
-        if (speed_km < v1 * 0.95) return { label: "Low elliptical orbit", color: "#f97316" };
-        if (speed_km < v1 * 1.05) return { label: "Near-circular orbit", color: "#22c55e" };
-        if (speed_km < v2 * 0.95) return { label: "Elliptical orbit", color: "#eab308" };
-        if (speed_km < v2 * 1.01) return { label: "Near-escape trajectory", color: "#a855f7" };
-        if (speed_km < v2 * 1.05) return { label: "Escape — parabolic", color: "#3b82f6" };
-        return { label: "Hyperbolic escape", color: "#ec4899" };
+        if (speed_km < v1 * 0.65) return { label: t("orbitSuborbital"),  color: "#ef4444" };
+        if (speed_km < v1 * 0.95) return { label: t("orbitLowElliptic"), color: "#f97316" };
+        if (speed_km < v1 * 1.05) return { label: t("orbitCircular"),    color: "#22c55e" };
+        if (speed_km < v2 * 0.95) return { label: t("orbitElliptic"),    color: "#eab308" };
+        if (speed_km < v2 * 1.01) return { label: t("orbitNearEscape"),  color: "#a855f7" };
+        if (speed_km < v2 * 1.05) return { label: t("orbitParabolic"),   color: "#3b82f6" };
+        return { label: t("orbitHyperbolic"), color: "#ec4899" };
     }
 
     function launch() {
@@ -457,7 +611,7 @@
         ctx.fillStyle = "#fbbf24";
         ctx.font = "11px system-ui";
         ctx.textAlign = "center";
-        ctx.fillText("Cannon", cx, cy - 12);
+        ctx.fillText(t("cannon"), cx, cy - 12);
     }
 
     // ── Draw trails & projectiles ──
@@ -582,10 +736,10 @@
         panel.innerHTML =
             '<div class="telem-panel-header" style="color:' + p.color + '">' +
                 '#' + p.id +
-                '<button class="telem-close" title="Remove">&times;</button>' +
+                '<button class="telem-close" title="' + t("telemRemove") + '">&times;</button>' +
             '</div>' +
-            '<div class="telem-panel-row"><span class="telem-label">Velocity</span><span class="telem-value" id="telemVel-' + p.id + '">—</span></div>' +
-            '<div class="telem-panel-row"><span class="telem-label">Altitude</span><span class="telem-value" id="telemAlt-' + p.id + '">—</span></div>';
+            '<div class="telem-panel-row"><span class="telem-label">' + t("telemVelocity") + '</span><span class="telem-value" id="telemVel-' + p.id + '">—</span></div>' +
+            '<div class="telem-panel-row"><span class="telem-label">' + t("telemAltitude") + '</span><span class="telem-value" id="telemAlt-' + p.id + '">—</span></div>';
         panel.querySelector(".telem-close").addEventListener("click", () => {
             const idx = projectiles.findIndex(proj => proj.id === p.id);
             if (idx !== -1) projectiles.splice(idx, 1);
