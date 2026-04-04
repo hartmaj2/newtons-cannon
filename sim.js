@@ -124,7 +124,6 @@
             case "suborbital":     return v1 * 0.5;
             case "v1":             return v1;
             case "v2":             return v2;
-            case "v3":             return v3;
             case "elliptical-low": return Math.sqrt(GM * 2 * R / (r * (r + R)));
             case "elliptical-high":return Math.sqrt(GM * 2 * 2 * r / (r * (r + 2 * r)));
             default:               return v1;
@@ -141,26 +140,23 @@
     const PRESET_ICONS = {
         "suborbital":      "🏔️",
         "v1":              "🛰️",
-        "v2":              "🔓",
-        "v3":              "☄️",
+        "v2":              "☄️",
         "elliptical-low":  "📉",
         "elliptical-high": "📈",
     };
 
     const PRESET_LABELS = {
         "suborbital":      "Suborbital",
-        "v1":              "1st Cosmic Speed",
-        "v2":              "2nd Cosmic Speed",
-        "v3":              "3rd Cosmic Speed",
+        "v1":              "Circular",
+        "v2":              "Parabolic",
         "elliptical-low":  "Elliptical (low)",
         "elliptical-high": "Elliptical (high)",
     };
 
     const presetDescriptions = {
         "suborbital":     "Suborbital — falls back",
-        "v1":             "Circular orbit",
-        "v2":             "Escape velocity",
-        "v3":             "Leave Solar System",
+        "v1":             "1st cosmic if at surface",
+        "v2":             "2nd cosmic if at surface",
         "elliptical-low": "Periapsis at surface",
         "elliptical-high":"Apoapsis at 2× radius",
     };
