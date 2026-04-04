@@ -180,10 +180,31 @@ button.primary:hover {
 }
 
 /* Telemetry */
-.telemetry-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+#telemetryContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.telem-panel {
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--accent);
+    transition: opacity 0.3s;
+}
+
+.telem-panel-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.telem-panel-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1px 0;
 }
 
 .telem-item {

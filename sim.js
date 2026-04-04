@@ -96,10 +96,7 @@
     const clearBtn  = document.getElementById("clearBtn");
     const resetBtn  = document.getElementById("resetBtn");
 
-    const telemVel    = document.getElementById("telemVelocity");
-    const telemAlt    = document.getElementById("telemAltitude");
-    const telemDist   = document.getElementById("telemDistance");
-    const telemStatus = document.getElementById("telemStatus");
+    const telemetryContainer = document.getElementById("telemetryContainer");
     const orbitLabel  = document.getElementById("orbit-label");
 
     function updateSliderDisplays() {
@@ -170,7 +167,8 @@
     });
 
     // ── Projectile simulation ──
-    const projectiles = [];   // each: { trail, x, y, vx, vy, alive, color, label }
+    const projectiles = [];   // each: { id, trail, x, y, vx, vy, alive, color, label }
+    let nextProjectileId = 1;
 
     const trailColors = [
         "#3b82f6", "#22c55e", "#eab308", "#ef4444",
@@ -211,8 +209,9 @@
         const color = trailColors[colorIdx % trailColors.length];
         colorIdx++;
 
+        const id = nextProjectileId++;
         projectiles.push({
-            x, y, vx, vy,
+            id, x, y, vx, vy,
             trail: [{ x, y }],
             alive: true,
             color,
@@ -233,6 +232,8 @@
     function clearTraces()
     {
         projectiles.length = 0;
+        nextProjectileId = 1;
+        telemetryContainer.innerHTML = "";
     }
 
     launchBtn.addEventListener("click", launch);
@@ -438,6 +439,12 @@
                 glow.addColorStop(1, "transparent");
                 ctx.fillStyle = glow;
                 ctx.fill();
+
+                // ID label
+                ctx.fillStyle = p.color;
+                ctx.font = "bold 11px system-ui";
+                ctx.textAlign = "left";
+                ctx.fillText("#" + p.id, sx + 10, sy - 6);
             } else {
                 // Impact / escape marker
                 const last = p.trail[p.trail.length - 1];
@@ -446,6 +453,12 @@
                 ctx.arc(sx, sy, 3, 0, Math.PI * 2);
                 ctx.fillStyle = "rgba(255,255,255,0.4)";
                 ctx.fill();
+
+                // ID label (dimmed)
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.font = "bold 11px system-ui";
+                ctx.textAlign = "left";
+                ctx.fillText("#" + p.id, sx + 8, sy - 4);
             }
         }
     }
@@ -503,35 +516,36 @@
     }
 
     // ── Telemetry update ──
+    function ensureTelemPanel(p) {
+        let panel = document.getElementById("telem-" + p.id);
+        if (panel) return panel;
+        panel = document.createElement("div");
+        panel.id = "telem-" + p.id;
+        panel.className = "telem-panel";
+        panel.style.borderLeftColor = p.color;
+        panel.innerHTML =
+            '<div class="telem-panel-header" style="color:' + p.color + '">#' + p.id + '</div>' +
+            '<div class="telem-panel-row"><span class="telem-label">Velocity</span><span class="telem-value" id="telemVel-' + p.id + '">—</span></div>' +
+            '<div class="telem-panel-row"><span class="telem-label">Altitude</span><span class="telem-value" id="telemAlt-' + p.id + '">—</span></div>';
+        telemetryContainer.appendChild(panel);
+        return panel;
+    }
+
     function updateTelemetry() {
-        const active = projectiles.filter(p => p.alive);
-        if (active.length === 0) {
-            const crashed = projectiles.filter(p => !p.alive);
-            if (crashed.length > 0) {
-                const last = crashed[crashed.length - 1];
-                const r = Math.sqrt(last.x * last.x + last.y * last.y);
-                telemStatus.textContent = r > R * 40 ? "Escaped" : "Impact";
-                telemStatus.style.color = r > R * 40 ? "var(--accent)" : "var(--danger)";
-            } else {
-                telemStatus.textContent = "Ready";
-                telemStatus.style.color = "var(--text)";
-            }
-            telemVel.textContent  = "—";
-            telemAlt.textContent  = "—";
-            telemDist.textContent = "—";
-            return;
+        for (const p of projectiles) {
+            ensureTelemPanel(p);
+            const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+            const r = Math.sqrt(p.x * p.x + p.y * p.y);
+            const alt = r - R;
+
+            const velEl = document.getElementById("telemVel-" + p.id);
+            const altEl = document.getElementById("telemAlt-" + p.id);
+            velEl.textContent = (v / 1000).toFixed(2) + " km/s";
+            altEl.textContent = (alt / 1000).toFixed(0) + " km";
+
+            const panel = document.getElementById("telem-" + p.id);
+            panel.style.opacity = p.alive ? "1" : "0.45";
         }
-
-        const p = active[active.length - 1];
-        const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        const r = Math.sqrt(p.x * p.x + p.y * p.y);
-        const alt = r - R;
-
-        telemVel.textContent  = (v / 1000).toFixed(2) + " km/s";
-        telemAlt.textContent  = (alt / 1000).toFixed(0) + " km";
-        telemDist.textContent = (r / 1000).toFixed(0) + " km";
-        telemStatus.textContent = "In flight";
-        telemStatus.style.color = "var(--success)";
     }
 
     // ── Main loop ──
