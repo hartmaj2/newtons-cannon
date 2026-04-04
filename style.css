@@ -1,0 +1,264 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0b0e17;
+    --panel: #111827;
+    --panel-border: #1e293b;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.3);
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #eab308;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+#app {
+    display: flex;
+    height: 100vh;
+}
+
+/* ── Side Panel ── */
+
+#controls {
+    width: 340px;
+    min-width: 340px;
+    background: var(--panel);
+    border-right: 1px solid var(--panel-border);
+    padding: 24px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#controls h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.control-group {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.control-group h2 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+}
+
+.value-display {
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Range inputs */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #1e293b;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    transition: all 0.15s;
+}
+
+button:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--accent);
+}
+
+button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+button.primary:hover {
+    background: #2563eb;
+}
+
+.preset-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preset {
+    text-align: left;
+    padding: 10px 12px;
+}
+
+.preset strong {
+    display: block;
+    font-size: 0.85rem;
+}
+
+.preset span {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.preset.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+
+.sim-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sim-buttons button {
+    flex: 1;
+    min-width: 80px;
+}
+
+.sim-buttons .primary {
+    flex: 2;
+}
+
+/* Telemetry */
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.telem-item {
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.telem-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+}
+
+.telem-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Info */
+.info-text {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+}
+
+/* ── Canvas Area ── */
+
+#sim-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#simCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#orbit-label {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 20px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+    white-space: nowrap;
+}
+
+#orbit-label.visible {
+    opacity: 1;
+}
+
+/* Scrollbar */
+#controls::-webkit-scrollbar {
+    width: 6px;
+}
+
+#controls::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#controls::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
