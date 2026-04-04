@@ -230,13 +230,42 @@
         orbitLabel._timer = setTimeout(() => orbitLabel.classList.remove("visible"), 3000);
     }
 
+    function clearTraces()
+    {
+        projectiles.length = 0;
+    }
+
     launchBtn.addEventListener("click", launch);
-    clearBtn.addEventListener("click", () => { projectiles.length = 0; });
+    clearBtn.addEventListener("click", clearTraces);
     resetBtn.addEventListener("click", resetView);
 
-    // Keyboard shortcut
+    // Keyboard shortcuts
+    const KEY_STEP_MULTIPLIER = 5;
+
+    const keyActions = {
+        speedUp()   { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
+        speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
+        altUp()     { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+        altDown()   { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+    };
+
+    const keyMap = {
+        KeyR : resetView,
+        KeyC : clearTraces,
+        Space:      launch,
+        ArrowRight: keyActions.speedUp,
+        ArrowLeft:  keyActions.speedDown,
+        ArrowUp:    keyActions.altUp,
+        ArrowDown:  keyActions.altDown,
+        KeyD:       keyActions.speedUp,
+        KeyA:       keyActions.speedDown,
+        KeyW:       keyActions.altUp,
+        KeyS:       keyActions.altDown,
+    };
+
     window.addEventListener("keydown", e => {
-        if (e.code === "Space") { e.preventDefault(); launch(); }
+        const action = keyMap[e.code];
+        if (action) { e.preventDefault(); action(); }
     });
 
     // ── Physics step (Velocity-Verlet) ──
