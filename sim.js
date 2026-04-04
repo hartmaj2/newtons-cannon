@@ -145,7 +145,7 @@
         reset:     "R",
         speed:     "← / → or A / D",
         altitude:  "↑ / ↓ or W / S",
-        timeScale: null,
+        timeScale: "Q / E",
     };
 
     // Apply icons and tooltips to buttons
@@ -159,6 +159,7 @@
 
     speedSlider.title     = TOOLTIPS.speed;
     altSlider.title       = TOOLTIPS.altitude;
+    timeScaleSlider.title = TOOLTIPS.timeScale;
 
     const PRESET_ICONS = {
         "suborbital":      "🏔️",
@@ -295,8 +296,10 @@
     const keyActions = {
         speedUp()   { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
         speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
-        altUp()     { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
-        altDown()   { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+        altUp()       { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+        altDown()     { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+        timeUp()      { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
+        timeDown()    { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
     };
 
     const keyMap = {
@@ -311,6 +314,8 @@
         KeyA:       keyActions.speedDown,
         KeyW:       keyActions.altUp,
         KeyS:       keyActions.altDown,
+        KeyE:       keyActions.timeUp,
+        KeyQ:       keyActions.timeDown,
     };
 
     window.addEventListener("keydown", e => {
