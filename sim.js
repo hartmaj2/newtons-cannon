@@ -97,6 +97,7 @@
     const resetBtn  = document.getElementById("resetBtn");
 
     const telemetryContainer = document.getElementById("telemetryContainer");
+    const telemetrySection   = document.getElementById("telemetrySection");
     const orbitLabel  = document.getElementById("orbit-label");
 
     function updateSliderDisplays() {
@@ -154,11 +155,11 @@
     };
 
     const presetDescriptions = {
-        "suborbital":     "Suborbital — falls back",
-        "v1":             "1st cosmic if at surface",
-        "v2":             "2nd cosmic if at surface",
-        "elliptical-low": "Periapsis at surface",
-        "elliptical-high":"Apoapsis at 2× radius",
+        "suborbital":     "Half of orbital velocity",
+        "v1":             "Circular orbit at this altitude",
+        "v2":             "Escape velocity at this altitude",
+        "elliptical-low": "Periapsis at planet surface",
+        "elliptical-high":"Apoapsis at 2× launch radius",
     };
 
     // Apply icons to buttons
@@ -255,6 +256,8 @@
         orbitLabel.classList.add("visible");
         clearTimeout(orbitLabel._timer);
         orbitLabel._timer = setTimeout(() => orbitLabel.classList.remove("visible"), 3000);
+
+        telemetrySection.style.display = "";
     }
 
     function clearTraces()
@@ -262,6 +265,7 @@
         projectiles.length = 0;
         nextProjectileId = 1;
         telemetryContainer.innerHTML = "";
+        telemetrySection.style.display = "none";
     }
 
     launchBtn.addEventListener("click", launch);
