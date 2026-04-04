@@ -138,6 +138,28 @@
         reset:  "🎯",
     };
 
+    // ── Tooltips (keyboard shortcuts) ──
+    const TOOLTIPS = {
+        launch:    "Space",
+        clear:     "C",
+        reset:     "R",
+        speed:     "← / → or A / D",
+        altitude:  "↑ / ↓ or W / S",
+        timeScale: null,
+    };
+
+    // Apply icons and tooltips to buttons
+    launchBtn.textContent = BUTTON_ICONS.launch + " Launch";
+    clearBtn.textContent  = BUTTON_ICONS.clear  + " Clear Traces";
+    resetBtn.textContent  = BUTTON_ICONS.reset  + " Reset View";
+
+    launchBtn.title = TOOLTIPS.launch;
+    clearBtn.title  = TOOLTIPS.clear;
+    resetBtn.title  = TOOLTIPS.reset;
+
+    speedSlider.title     = TOOLTIPS.speed;
+    altSlider.title       = TOOLTIPS.altitude;
+
     const PRESET_ICONS = {
         "suborbital":      "🏔️",
         "v1":              "🛰️",
@@ -161,11 +183,6 @@
         "elliptical-low": "Periapsis at planet surface",
         "elliptical-high":"Apoapsis at 2× launch radius",
     };
-
-    // Apply icons to buttons
-    launchBtn.textContent = BUTTON_ICONS.launch + " Launch";
-    clearBtn.textContent  = BUTTON_ICONS.clear  + " Clear Traces";
-    resetBtn.textContent  = BUTTON_ICONS.reset  + " Reset View";
 
     function updatePresets() {
         const alt_km = parseFloat(altSlider.value);
