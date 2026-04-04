@@ -85,12 +85,10 @@
 
     // ── UI elements ──
     const speedSlider     = document.getElementById("speed");
-    const dirSlider       = document.getElementById("direction");
     const altSlider       = document.getElementById("altitude");
     const timeScaleSlider = document.getElementById("timeScale");
 
     const speedVal     = document.getElementById("speedValue");
-    const dirVal       = document.getElementById("directionValue");
     const altVal       = document.getElementById("altitudeValue");
     const timeScaleVal = document.getElementById("timeScaleValue");
 
@@ -106,12 +104,11 @@
 
     function updateSliderDisplays() {
         speedVal.textContent     = parseFloat(speedSlider.value).toFixed(1) + " km/s";
-        dirVal.textContent       = dirSlider.value + "°";
         altVal.textContent       = parseInt(altSlider.value).toLocaleString() + " km";
         timeScaleVal.textContent = timeScaleSlider.value + "×";
     }
 
-    [speedSlider, dirSlider, altSlider, timeScaleSlider].forEach(s =>
+    [speedSlider, altSlider, timeScaleSlider].forEach(s =>
         s.addEventListener("input", updateSliderDisplays)
     );
     updateSliderDisplays();
@@ -131,8 +128,8 @@
             case "v1":             return v1;
             case "v2":             return v2;
             case "v3":             return v3;
-            case "elliptical-low": return v1 * 0.75;
-            case "elliptical-high":return (v1 + v2) / 2;
+            case "elliptical-low": return Math.sqrt(GM * 2 * R / (r * (r + R)));
+            case "elliptical-high":return Math.sqrt(GM * 2 * 2 * r / (r * (r + 2 * r)));
             default:               return v1;
         }
     }
@@ -142,8 +139,8 @@
         "v1":             "Circular orbit",
         "v2":             "Escape velocity",
         "v3":             "Leave Solar System",
-        "elliptical-low": "Low elliptical orbit",
-        "elliptical-high":"High elliptical orbit",
+        "elliptical-low": "Periapsis at surface",
+        "elliptical-high":"Apoapsis at 2× radius",
     };
 
     function updatePresets() {
@@ -166,7 +163,6 @@
     document.querySelectorAll(".preset").forEach(btn => {
         btn.addEventListener("click", () => {
             speedSlider.value = btn.dataset.speed;
-            dirSlider.value   = btn.dataset.direction;
             updateSliderDisplays();
             document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
@@ -197,21 +193,19 @@
 
     function launch() {
         const speed_km = parseFloat(speedSlider.value);         // km/s
-        const dirDeg   = parseFloat(dirSlider.value);           // degrees
         const alt_km   = parseFloat(altSlider.value);           // km
 
         const speed = speed_km * 1000;                          // m/s
         const alt   = alt_km * 1000;                            // m
         const r     = R + alt;
-        const dirRad = dirDeg * Math.PI / 180;
 
         // Position: top of planet (y-axis up)
         const x = 0;
         const y = r;
 
-        // Velocity: horizontal = tangent at top = +x, direction rotates from that
-        const vx =  speed * Math.cos(dirRad);
-        const vy =  speed * Math.sin(dirRad);
+        // Velocity: always horizontal (tangent at top)
+        const vx = speed;
+        const vy = 0;
 
         const cls = classifyOrbit(speed_km, alt_km);
         const color = trailColors[colorIdx % trailColors.length];
@@ -345,7 +339,6 @@
         const alt = parseFloat(altSlider.value) * 1000;
         const r = R + alt;
         const [cx, cy] = worldToScreen(0, r);
-        const dir = parseFloat(dirSlider.value) * Math.PI / 180;
 
         // Cannon base
         ctx.beginPath();
@@ -353,10 +346,10 @@
         ctx.fillStyle = "#fbbf24";
         ctx.fill();
 
-        // Direction arrow
+        // Direction arrow (always horizontal)
         const len = 30;
-        const ex = cx + Math.cos(dir) * len;       // screen: right = +x
-        const ey = cy - Math.sin(dir) * len;       // screen: up = -y
+        const ex = cx + len;
+        const ey = cy;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(ex, ey);
@@ -365,12 +358,11 @@
         ctx.stroke();
 
         // arrowhead
-        const angle = Math.atan2(cy - ey, ex - cx);
         ctx.beginPath();
         ctx.moveTo(ex, ey);
-        ctx.lineTo(ex - 8 * Math.cos(angle - 0.4), ey + 8 * Math.sin(angle - 0.4));
+        ctx.lineTo(ex - 8, ey - 5);
         ctx.moveTo(ex, ey);
-        ctx.lineTo(ex - 8 * Math.cos(angle + 0.4), ey + 8 * Math.sin(angle + 0.4));
+        ctx.lineTo(ex - 8, ey + 5);
         ctx.strokeStyle = "#fbbf24";
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -519,7 +511,7 @@
     function frame(timestamp) {
         requestAnimationFrame(frame);
 
-        const dt_real = lastTime ? (timestamp - lastTime) / 1000 : 0;
+        const dt_real = lastTime ? Math.min((timestamp - lastTime) / 1000, 1 / 30) : 0;
         lastTime = timestamp;
 
         const timeScale = parseInt(timeScaleSlider.value);
