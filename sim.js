@@ -376,8 +376,10 @@
         ctx.fillStyle = "#fbbf24";
         ctx.fill();
 
-        // Direction arrow (always horizontal)
-        const len = 30;
+        // Direction arrow (scales with speed)
+        const speed_km = parseFloat(speedSlider.value);
+        const maxSpeed = parseFloat(speedSlider.max);
+        const len = 15 + 45 * (speed_km / maxSpeed);
         const ex = cx + len;
         const ey = cy;
         ctx.beginPath();

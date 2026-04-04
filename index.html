@@ -33,6 +33,22 @@
             </section>
 
             <section class="control-group">
+                <h2>Simulation</h2>
+                <label>
+                    <span class="label-row">
+                        Time scale
+                        <span class="value-display" id="timeScaleValue">1×</span>
+                    </span>
+                    <input type="range" id="timeScale" min="1" max="20" step="1" value="5">
+                </label>
+                <div class="sim-buttons">
+                    <button id="launchBtn" class="primary">🚀 Launch</button>
+                    <button id="clearBtn">Clear Traces</button>
+                    <button id="resetBtn">Reset View</button>
+                </div>
+            </section>
+
+            <section class="control-group">
                 <h2>Presets</h2>
                 <div class="preset-buttons">
                     <button class="preset" data-type="suborbital">
@@ -59,22 +75,6 @@
                         <strong>Elliptical (high)</strong>
                         <span></span>
                     </button>
-                </div>
-            </section>
-
-            <section class="control-group">
-                <h2>Simulation</h2>
-                <label>
-                    <span class="label-row">
-                        Time scale
-                        <span class="value-display" id="timeScaleValue">1×</span>
-                    </span>
-                    <input type="range" id="timeScale" min="1" max="20" step="1" value="5">
-                </label>
-                <div class="sim-buttons">
-                    <button id="launchBtn" class="primary">🚀 Launch</button>
-                    <button id="clearBtn">Clear Traces</button>
-                    <button id="resetBtn">Reset View</button>
                 </div>
             </section>
 
