@@ -131,6 +131,31 @@
         }
     }
 
+    // ── Button & preset emojis ──
+    const BUTTON_ICONS = {
+        launch: "🚀",
+        clear:  "🧹",
+        reset:  "🎯",
+    };
+
+    const PRESET_ICONS = {
+        "suborbital":      "🏔️",
+        "v1":              "🛰️",
+        "v2":              "🔓",
+        "v3":              "☄️",
+        "elliptical-low":  "📉",
+        "elliptical-high": "📈",
+    };
+
+    const PRESET_LABELS = {
+        "suborbital":      "Suborbital",
+        "v1":              "1st Cosmic Speed",
+        "v2":              "2nd Cosmic Speed",
+        "v3":              "3rd Cosmic Speed",
+        "elliptical-low":  "Elliptical (low)",
+        "elliptical-high": "Elliptical (high)",
+    };
+
     const presetDescriptions = {
         "suborbital":     "Suborbital — falls back",
         "v1":             "Circular orbit",
@@ -140,6 +165,11 @@
         "elliptical-high":"Apoapsis at 2× radius",
     };
 
+    // Apply icons to buttons
+    launchBtn.textContent = BUTTON_ICONS.launch + " Launch";
+    clearBtn.textContent  = BUTTON_ICONS.clear  + " Clear Traces";
+    resetBtn.textContent  = BUTTON_ICONS.reset  + " Reset View";
+
     function updatePresets() {
         const alt_km = parseFloat(altSlider.value);
         const r = R + alt_km * 1000;
@@ -148,6 +178,8 @@
             const speed_ms = computePresetSpeed(type, r);
             const speed_km = speed_ms / 1000;
             btn.dataset.speed = speed_km.toFixed(2);
+            btn.querySelector("strong").textContent =
+                PRESET_ICONS[type] + " " + PRESET_LABELS[type];
             btn.querySelector("span").textContent =
                 speed_km.toFixed(1) + " km/s — " + presetDescriptions[type];
         });
