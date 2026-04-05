@@ -61,7 +61,7 @@
             orbitHyperbolic:   "Hyperbolic escape",
 
             // Language toggle
-            langLabel: "EN",
+            langLabel: "🇬🇧 EN",
         },
         cs: {
             title: "Newtonův kanón",
@@ -105,7 +105,7 @@
             orbitParabolic:    "Únik — parabolický",
             orbitHyperbolic:   "Hyperbolický únik",
 
-            langLabel: "CZ",
+            langLabel: "🇨🇿 CZ",
         },
     };
 
