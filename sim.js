@@ -217,6 +217,11 @@
     [speedSlider, altSlider, timeScaleSlider].forEach(s =>
         s.addEventListener("input", updateSliderDisplays)
     );
+
+    [speedSlider, altSlider].forEach(s =>
+        s.addEventListener("input", unselectPresets)
+    );
+
     updateSliderDisplays();
 
     // ── Dynamic presets based on altitude ──
@@ -295,6 +300,10 @@
         "elliptical-low":  "descEllipticalLow",
         "elliptical-high": "descEllipticalHigh",
     };
+
+    function unselectPresets() {
+        document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
+    }
 
     function updatePresets() {
         const alt_km = parseFloat(altSlider.value);
@@ -448,10 +457,10 @@
     const KEY_STEP_MULTIPLIER = 5;
 
     const keyActions = {
-        speedUp()   { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
-        speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); },
-        altUp()       { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
-        altDown()     { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); },
+        speedUp()   { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
+        speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
+        altUp()       { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
+        altDown()     { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
         timeUp()      { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
         timeDown()    { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
     };
