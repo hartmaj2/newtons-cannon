@@ -22,12 +22,12 @@
             // Labels
             labelSpeed:     "Speed",
             labelAltitude:  "Altitude above surface",
-            labelTimeScale: "Time scale",
+            labelTimeScale: "Simulation speed",
 
             // Buttons
             btnLaunch: "Launch",
-            btnClear:  "Clear Traces",
-            btnReset:  "Reset View",
+            btnClear:  "Remove objects",
+            btnReset:  "Recenter View",
 
             // Canvas
             cannon: "Cannon",
@@ -73,11 +73,11 @@
 
             labelSpeed:     "Rychlost",
             labelAltitude:  "Výška nad povrchem",
-            labelTimeScale: "Časové měřítko",
+            labelTimeScale: "Rychlost simulace",
 
             btnLaunch: "Start",
-            btnClear:  "Smazat stopy",
-            btnReset:  "Obnovit pohled",
+            btnClear:  "Odstranit tělesa",
+            btnReset:  "Vycentrovat pohled",
 
             cannon: "Kanón",
 
