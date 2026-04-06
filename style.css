@@ -308,10 +308,18 @@ button.primary:hover {
     overflow: hidden;
 }
 
-#langToggle {
+/* ── Top bar (lang + info toggles) ── */
+
+.top-bar {
     position: absolute;
     top: 12px;
     right: 12px;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+#langToggle, #infoToggle {
     background: rgba(0,0,0,0.6);
     border: 1px solid var(--panel-border);
     color: var(--text);
@@ -320,12 +328,63 @@ button.primary:hover {
     padding: 4px 10px;
     border-radius: 6px;
     cursor: pointer;
-    z-index: 10;
     transition: background 0.15s, border-color 0.15s;
 }
-#langToggle:hover {
+#langToggle:hover, #infoToggle:hover {
     background: rgba(0,0,0,0.8);
     border-color: var(--accent);
+}
+
+#infoToggle.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+
+/* ── Info overlay panel ── */
+
+.info-overlay {
+    position: absolute;
+    top: 48px;
+    right: 12px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    z-index: 10;
+    max-width: 380px;
+    backdrop-filter: blur(8px);
+}
+
+.info-overlay h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.info-overlay table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-overlay td {
+    padding: 4px 0;
+    font-size: 0.82rem;
+    vertical-align: baseline;
+}
+
+.info-overlay td:first-child {
+    color: var(--text-dim);
+    padding-right: 16px;
+    white-space: nowrap;
+}
+
+.info-overlay td.mono {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    color: var(--text);
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
 #simCanvas {

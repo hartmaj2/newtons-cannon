@@ -5,7 +5,7 @@
     const G  = 6.674e-11;          // gravitational constant
     const M  = 5.972e24;           // Earth mass (kg)
     const GM = G * M;              // standard gravitational parameter
-    const R  = 6.371e6;            // Earth radius (m)
+    const R  = 6.378e6;            // Earth radius (m)
 
     // ── Internationalization ──
     const LOCALES = {
@@ -62,6 +62,13 @@
             orbitParabolic:    "Escape — parabolic",
             orbitHyperbolic:   "Hyperbolic escape",
 
+            // Info panel
+            infoTitle:    "Physical Constants",
+            infoG:        "Gravitational constant",
+            infoM:        "Earth mass",
+            infoR:        "Earth radius",
+            infoGM:       "Standard grav. parameter",
+
             // Language toggle
             langLabel: "🇬🇧 EN",
         },
@@ -108,6 +115,12 @@
             orbitNearEscape:   "Téměř úniková trajektorie",
             orbitParabolic:    "Únik — parabolický",
             orbitHyperbolic:   "Hyperbolický únik",
+
+            infoTitle:    "Fyzikální konstanty",
+            infoG:        "Gravitační konstanta",
+            infoM:        "Hmotnost Země",
+            infoR:        "Poloměr Země",
+            infoGM:       "Stand. grav. parametr",
 
             langLabel: "🇨🇿 CZ",
         },
@@ -351,6 +364,29 @@
     // ── Language toggle ──
     const langToggle = document.getElementById("langToggle");
     const LANG_CYCLE = Object.keys(LOCALES);
+
+    // ── Info panel toggle ──
+    const infoToggle = document.getElementById("infoToggle");
+    const infoPanel  = document.getElementById("infoPanel");
+
+    infoToggle.addEventListener("click", () => {
+        const open = infoPanel.style.display === "none";
+        infoPanel.style.display = open ? "" : "none";
+        infoToggle.classList.toggle("active", open);
+    });
+
+    // Populate info panel from constants
+    function sciNote(val, unit) {
+        const exp = Math.floor(Math.log10(Math.abs(val)));
+        const mantissa = val / Math.pow(10, exp);
+        const sup = String(exp).replace(/-/g, "⁻").replace(/\d/g, d =>
+            "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+        return mantissa.toPrecision(4) + " × 10" + sup + " " + unit;
+    }
+    document.getElementById("infoValG").textContent  = "G = " + sciNote(G, "N·m²/kg²");
+    document.getElementById("infoValM").textContent  = "M = " + sciNote(M, "kg");
+    document.getElementById("infoValR").textContent  = "R = " + (R / 1e3).toLocaleString() + " km";
+    document.getElementById("infoValGM").textContent = "GM = " + sciNote(GM, "m³/s²");
 
     function setLocale(lang) {
         currentLocale = lang;

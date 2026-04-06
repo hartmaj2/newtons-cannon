@@ -94,7 +94,19 @@
             <canvas id="simCanvas"></canvas>
             <div id="orbit-label"></div>
             <div id="param-label"></div>
-            <button id="langToggle" title="Language">EN</button>
+            <div class="top-bar">
+                <button id="infoToggle" title="Physical Constants">ℹ️</button>
+                <button id="langToggle" title="Language">EN</button>
+            </div>
+            <div id="infoPanel" class="info-overlay" style="display:none">
+                <h3 data-i18n="infoTitle">Physical Constants</h3>
+                <table>
+                    <tr><td data-i18n="infoG">Gravitational constant</td><td class="mono" id="infoValG"></td></tr>
+                    <tr><td data-i18n="infoM">Earth mass</td><td class="mono" id="infoValM"></td></tr>
+                    <tr><td data-i18n="infoR">Earth radius</td><td class="mono" id="infoValR"></td></tr>
+                    <tr><td data-i18n="infoGM">Standard grav. parameter</td><td class="mono" id="infoValGM"></td></tr>
+                </table>
+            </div>
         </main>
     </div>
 
