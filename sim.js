@@ -1252,29 +1252,25 @@
         ctx.restore();
     }
 
-    // ── Off-screen cannon indicator ──
-    function drawCannonIndicator() {
-        const alt = parseFloat(altSlider.value) * 1000;
-        const r = R + alt;
-        const [cx, cy] = worldToScreen(0, r);
+    // ── Off-screen indicator arrows ──
+    function drawOffscreenArrow(sx, sy, color) {
         const w = canvas.clientWidth;
         const h = canvas.clientHeight;
         const margin = 40;
 
-        // Check if cannon is on-screen (with some padding)
-        if (cx >= -10 && cx <= w + 10 && cy >= -10 && cy <= h + 10) return;
+        // Already on-screen — nothing to draw
+        if (sx >= -10 && sx <= w + 10 && sy >= -10 && sy <= h + 10) return;
 
-        // Clamp to screen edge
         const centerX = w / 2;
         const centerY = h / 2;
-        const dx = cx - centerX;
-        const dy = cy - centerY;
+        const dx = sx - centerX;
+        const dy = sy - centerY;
         const angle = Math.atan2(dy, dx);
 
         // Find intersection with screen edge (inset by margin)
         const edgeW = w / 2 - margin;
         const edgeH = h / 2 - margin;
-        let scale = Math.min(
+        const scale = Math.min(
             Math.abs(edgeW / (dx || 1e-9)),
             Math.abs(edgeH / (dy || 1e-9))
         );
@@ -1295,10 +1291,25 @@
         ctx.lineTo(-6, -7);
         ctx.lineTo(-6, 7);
         ctx.closePath();
-        ctx.fillStyle = "#fbbf24";
+        ctx.fillStyle = color;
         ctx.fill();
 
         ctx.restore();
+    }
+
+    function drawCannonIndicator() {
+        const alt = parseFloat(altSlider.value) * 1000;
+        const r = R + alt;
+        const [cx, cy] = worldToScreen(0, r);
+        drawOffscreenArrow(cx, cy, "#fbbf24");
+    }
+
+    function drawProjectileIndicators() {
+        for (const p of projectiles) {
+            if (!p.alive) continue;
+            const [sx, sy] = worldToScreen(p.x, p.y);
+            drawOffscreenArrow(sx, sy, p.color);
+        }
     }
 
     canvas.addEventListener("mousemove", e => {
@@ -1426,6 +1437,7 @@
         drawCannon();
         drawCannonIndicator();
         drawProjectiles();
+        drawProjectileIndicators();
         drawScaleBar();
         updateTelemetry();
     }
