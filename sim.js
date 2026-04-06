@@ -812,24 +812,93 @@
         ctx.globalAlpha = 1;
     }
 
-    // ── Draw scale indicator ──
-    function drawScaleBar() {
-        const targetLen = 120; // target bar length in pixels
-        const worldLen = targetLen / viewScale; // corresponding world length
+    // ── Draw scale indicator (draggable) ──
+    let scaleBarOffsetX = 0;
+    let scaleBarOffsetY = 0;
+    let scaleBarDragging = false;
+    let scaleBarDragStartX = 0;
+    let scaleBarDragStartY = 0;
+    let scaleBarTween = null; // {startX, startY, startTime, duration}
 
-        // find a nice round number
+    function getScaleBarMetrics() {
+        const targetLen = 120;
+        const worldLen = targetLen / viewScale;
         const exponent = Math.floor(Math.log10(worldLen));
         const base = Math.pow(10, exponent);
         let niceLen;
         if (worldLen / base < 2) niceLen = base;
         else if (worldLen / base < 5) niceLen = 2 * base;
         else niceLen = 5 * base;
-
         const barPx = niceLen * viewScale;
-        const x = canvas.clientWidth - 20 - barPx;
-        const y = canvas.clientHeight - 30;
+        const defaultX = canvas.clientWidth - 20 - barPx;
+        const defaultY = canvas.clientHeight - 30;
+        return { niceLen, barPx, defaultX, defaultY };
+    }
 
-        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    function scaleBarHitTest(mx, my) {
+        const { barPx, defaultX, defaultY } = getScaleBarMetrics();
+        const x = defaultX + scaleBarOffsetX;
+        const y = defaultY + scaleBarOffsetY;
+        const pad = 12;
+        return mx >= x - pad && mx <= x + barPx + pad && my >= y - 16 && my <= y + pad;
+    }
+
+    canvas.addEventListener("mousedown", e => {
+        if (scaleBarHitTest(e.offsetX, e.offsetY)) {
+            scaleBarDragging = true;
+            scaleBarDragStartX = e.offsetX - scaleBarOffsetX;
+            scaleBarDragStartY = e.offsetY - scaleBarOffsetY;
+            scaleBarTween = null;
+            e.stopPropagation();
+            return;
+        }
+    }, true);
+
+    window.addEventListener("mousemove", e => {
+        if (!scaleBarDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        scaleBarOffsetX = (e.clientX - rect.left) - scaleBarDragStartX;
+        scaleBarOffsetY = (e.clientY - rect.top) - scaleBarDragStartY;
+    });
+
+    window.addEventListener("mouseup", () => {
+        if (scaleBarDragging) {
+            scaleBarDragging = false;
+            if (scaleBarOffsetX !== 0 || scaleBarOffsetY !== 0) {
+                scaleBarTween = {
+                    startX: scaleBarOffsetX,
+                    startY: scaleBarOffsetY,
+                    startTime: performance.now(),
+                    duration: 300,
+                };
+            }
+        }
+    });
+
+    function updateScaleBarTween() {
+        if (!scaleBarTween) return;
+        const elapsed = performance.now() - scaleBarTween.startTime;
+        const t = Math.min(elapsed / scaleBarTween.duration, 1);
+        // ease-out cubic
+        const ease = 1 - Math.pow(1 - t, 3);
+        scaleBarOffsetX = scaleBarTween.startX * (1 - ease);
+        scaleBarOffsetY = scaleBarTween.startY * (1 - ease);
+        if (t >= 1) {
+            scaleBarOffsetX = 0;
+            scaleBarOffsetY = 0;
+            scaleBarTween = null;
+        }
+    }
+
+    function drawScaleBar() {
+        updateScaleBarTween();
+
+        const { niceLen, barPx, defaultX, defaultY } = getScaleBarMetrics();
+        const x = defaultX + scaleBarOffsetX;
+        const y = defaultY + scaleBarOffsetY;
+
+        const alpha = scaleBarDragging ? 0.85 : 0.5;
+        ctx.strokeStyle = "rgba(255,255,255," + alpha + ")";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
@@ -838,15 +907,25 @@
         ctx.stroke();
 
         let label;
-        if (niceLen >= 1e6) label = (niceLen / 1e6).toFixed(0) + " Mm";
-        else if (niceLen >= 1e3) label = (niceLen / 1e3).toFixed(0) + " km";
+        if (niceLen >= 1e3) label = (niceLen / 1e3).toLocaleString() + " km";
         else label = niceLen.toFixed(0) + " m";
 
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fillStyle = "rgba(255,255,255," + alpha + ")";
         ctx.font = "11px system-ui";
         ctx.textAlign = "center";
         ctx.fillText(label, x + barPx / 2, y - 8);
+
     }
+
+    canvas.addEventListener("mousemove", e => {
+        if (scaleBarDragging) {
+            canvas.style.cursor = "grabbing";
+        } else if (scaleBarHitTest(e.offsetX, e.offsetY)) {
+            canvas.style.cursor = "grab";
+        } else {
+            canvas.style.cursor = "";
+        }
+    });
 
     // ── Telemetry update ──
     function ensureTelemPanel(p) {
