@@ -488,3 +488,76 @@ button.primary:hover {
     background: #334155;
     border-radius: 3px;
 }
+
+/* ── Panel toggle button (mobile) ── */
+
+.panel-toggle {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 200;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.panel-toggle:hover {
+    background: rgba(17, 24, 39, 1);
+    border-color: var(--accent);
+}
+
+/* ── Mobile responsive ── */
+
+@media (max-width: 768px) {
+    .panel-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #app {
+        position: relative;
+    }
+
+    #controls {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 100;
+        width: 300px;
+        min-width: 300px;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        padding-top: 60px;
+    }
+
+    #controls.collapsed {
+        transform: translateX(-100%);
+        box-shadow: none;
+    }
+
+    #sim-container {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .top-bar {
+        right: 12px;
+        left: auto;
+    }
+
+    #orbit-label {
+        top: 60px;
+    }
+}

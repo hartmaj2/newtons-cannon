@@ -158,11 +158,16 @@
     let viewCenterY = 0;
     let viewScale   = 0;   // pixels per meter — computed from planet
 
+    function isMobile() {
+        return window.matchMedia("(max-width: 768px)").matches;
+    }
+
     function resetView() {
         viewCenterX = 0;
         viewCenterY = 0;
         const minDim = Math.min(canvas.clientWidth, canvas.clientHeight);
-        viewScale = minDim / (3.5 * R);   // planet takes ~57% of smallest dim
+        const divisor = isMobile() ? 4.5 : 3.5;
+        viewScale = minDim / (divisor * R);
     }
     resetView();
 
@@ -216,6 +221,48 @@
         viewCenterX = wx - (e.offsetX - canvas.clientWidth  / 2) / viewScale;
         viewCenterY = wy + (e.offsetY - canvas.clientHeight / 2) / viewScale;
     }, { passive: false });
+
+    // ── Touch pan & pinch-zoom (mobile) ──
+    let lastTouchDist = 0;
+
+    canvas.addEventListener("touchstart", e => {
+        if (e.touches.length === 1) {
+            isPanning  = true;
+            panStartX  = e.touches[0].clientX;
+            panStartY  = e.touches[0].clientY;
+            panOriginX = viewCenterX;
+            panOriginY = viewCenterY;
+        } else if (e.touches.length === 2) {
+            isPanning = false;
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            lastTouchDist = Math.hypot(dx, dy);
+        }
+    }, { passive: true });
+
+    canvas.addEventListener("touchmove", e => {
+        e.preventDefault();
+        if (e.touches.length === 1 && isPanning) {
+            const dx = e.touches[0].clientX - panStartX;
+            const dy = e.touches[0].clientY - panStartY;
+            viewCenterX = panOriginX - dx / viewScale;
+            viewCenterY = panOriginY + dy / viewScale;
+        } else if (e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const dist = Math.hypot(dx, dy);
+            if (lastTouchDist > 0) {
+                const factor = dist / lastTouchDist;
+                viewScale *= factor;
+            }
+            lastTouchDist = dist;
+        }
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", () => {
+        isPanning = false;
+        lastTouchDist = 0;
+    }, { passive: true });
 
     // ── Slider configuration ──
     const SLIDER_CONFIG = {
@@ -576,7 +623,28 @@
         telemetrySection.style.display = "none";
     }
 
-    launchBtn.addEventListener("click", launch);
+    // ── Mobile panel toggle ──
+    const panelToggle = document.getElementById("panelToggle");
+    const controlsPanel = document.getElementById("controls");
+
+    function closePanelIfMobile() {
+        if (isMobile()) {
+            controlsPanel.classList.add("collapsed");
+            panelToggle.textContent = "☰";
+        }
+    }
+
+    panelToggle.addEventListener("click", () => {
+        const collapsed = controlsPanel.classList.toggle("collapsed");
+        panelToggle.textContent = collapsed ? "☰" : "✕";
+    });
+
+    // Start collapsed on mobile
+    if (isMobile()) {
+        controlsPanel.classList.add("collapsed");
+    }
+
+    launchBtn.addEventListener("click", () => { launch(); closePanelIfMobile(); });
     resetAngleBtn.addEventListener("click", resetAngle);
     clearAllBtn.addEventListener("click", clearTraces);
     resetBtn.addEventListener("click", resetView);
