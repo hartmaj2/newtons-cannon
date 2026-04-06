@@ -68,6 +68,12 @@
             infoM:        "Earth mass",
             infoR:        "Earth radius",
 
+            // Tooltips
+            tipLaunch:      "Space",
+            tipResetAngle:  "Press O",
+            tipRecenter:    "Press C",
+            tipHold:        "Hold",
+
             // Language toggle
             langLabel: "🇬🇧 EN",
         },
@@ -119,6 +125,11 @@
             infoG:        "Gravitační konstanta",
             infoM:        "Hmotnost Země",
             infoR:        "Poloměr Země",
+
+            tipLaunch:      "Mezerník",
+            tipResetAngle:  "Klávesa O",
+            tipRecenter:    "Klávesa C",
+            tipHold:        "Držet",
 
             langLabel: "🇨🇿 CZ",
         },
@@ -297,34 +308,24 @@
         reset:      "🎯",
     };
 
-    // ── Tooltips (keyboard shortcuts) ──
-    const TOOLTIPS = {
-        launch:     "Mezerník",
-        resetAngle: "O",
-        recenterView: "C",
-        speed:     "Držet R + ←→↑↓",
-        altitude:  "Držet V + ←→↑↓",
-        direction: "Držet U + ←→↑↓",
-        timeScale: "Držet K + ←→↑↓",
-    };
-
-    // Apply icons and tooltips to buttons
+    // Apply icons, tooltips, button labels
     function applyButtonLabels() {
         launchBtn.textContent     = BUTTON_ICONS.launch     + " " + t("btnLaunch");
         resetAngleBtn.textContent = BUTTON_ICONS.resetAngle + " " + t("btnResetAngle");
         resetBtn.textContent      = BUTTON_ICONS.reset      + " " + t("btnReset");
         clearAllBtn.title         = t("btnClearAll");
+
+        launchBtn.title     = t("tipLaunch");
+        resetAngleBtn.title = t("tipResetAngle");
+        resetBtn.title      = t("tipRecenter");
+
+        const hold = t("tipHold");
+        speedSlider.title     = hold + " R + ←→↑↓";
+        altSlider.title       = hold + " V + ←→↑↓";
+        dirSlider.title       = hold + " U + ←→↑↓";
+        timeScaleSlider.title = hold + " K + ←→↑↓";
     }
     applyButtonLabels();
-
-    launchBtn.title     = TOOLTIPS.launch;
-    resetAngleBtn.title = TOOLTIPS.resetAngle;
-    resetBtn.title      = TOOLTIPS.recenterView;
-
-    speedSlider.title     = TOOLTIPS.speed;
-    altSlider.title       = TOOLTIPS.altitude;
-    dirSlider.title       = TOOLTIPS.direction;
-    timeScaleSlider.title = TOOLTIPS.timeScale;
 
     const PRESET_ICONS = {
         "suborbital":      "🏔️",
