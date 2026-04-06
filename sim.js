@@ -216,6 +216,12 @@
 
     function getTimeScale() { return Math.round(Math.pow(10, parseInt(timeScaleSlider.value))); }
 
+    // ── Units ──
+    const UNIT_SPEED     = " km/s";
+    const UNIT_ALTITUDE  = " km";
+    const UNIT_DIRECTION = "°";
+    const UNIT_TIMESCALE = "×";
+
     // ── UI elements ──
     const speedSlider     = document.getElementById("speed");
     const altSlider       = document.getElementById("altitude");
@@ -247,10 +253,10 @@
     const orbitLabel  = document.getElementById("orbit-label");
 
     function updateSliderDisplays() {
-        speedVal.textContent     = parseFloat(speedSlider.value).toFixed(1) + " km/s";
-        altVal.textContent       = parseInt(altSlider.value).toLocaleString() + " km";
-        dirVal.textContent       = dirSlider.value + "°";
-        timeScaleVal.textContent = getTimeScale() + " s/s";
+        speedVal.textContent     = parseFloat(speedSlider.value).toFixed(1) + UNIT_SPEED;
+        altVal.textContent       = parseInt(altSlider.value).toLocaleString() + UNIT_ALTITUDE;
+        dirVal.textContent       = dirSlider.value + UNIT_DIRECTION;
+        timeScaleVal.textContent = getTimeScale() + UNIT_TIMESCALE;
     }
 
     [speedSlider, altSlider, dirSlider, timeScaleSlider].forEach(s =>
@@ -359,7 +365,7 @@
             btn.querySelector("strong").textContent =
                 PRESET_ICONS[type] + " " + t(PRESET_LABEL_KEYS[type]);
             btn.querySelector("span").textContent =
-                speed_km.toFixed(1) + " km/s — " + t(PRESET_DESC_KEYS[type]);
+                speed_km.toFixed(1) + UNIT_SPEED + " — " + t(PRESET_DESC_KEYS[type]);
         });
     }
 
@@ -404,7 +410,7 @@
     }
     document.getElementById("infoValG").textContent  = "G = " + sciNote(G, "N·m²/kg²");
     document.getElementById("infoValM").textContent  = "M = " + sciNote(M, "kg");
-    document.getElementById("infoValR").textContent  = "R = " + (R / 1e3).toLocaleString() + " km";
+    document.getElementById("infoValR").textContent  = "R = " + (R / 1e3).toLocaleString() + UNIT_ALTITUDE;
 
     function setLocale(lang) {
         currentLocale = lang;
@@ -499,7 +505,7 @@
         });
 
         // Show orbit label
-        orbitLabel.textContent = cls.label + "  (" + speed_km.toFixed(1) + " km/s)";
+        orbitLabel.textContent = cls.label + "  (" + speed_km.toFixed(1) + UNIT_SPEED + ")";
         orbitLabel.style.color = cls.color;
         orbitLabel.classList.add("visible");
         clearTimeout(orbitLabel._timer);
@@ -536,24 +542,24 @@
         speed: {
             labelKey: "labelSpeed",
             slider: speedSlider,
-            format(v) { return parseFloat(v).toFixed(1) + " km/s"; },
+            format(v) { return parseFloat(v).toFixed(1) + UNIT_SPEED; },
             onchange() { unselectPresets(); },
         },
         altitude: {
             labelKey: "labelAltitude",
             slider: altSlider,
-            format(v) { return parseInt(v).toLocaleString() + " km"; },
+            format(v) { return parseInt(v).toLocaleString() + UNIT_ALTITUDE; },
             onchange() { updatePresets(); unselectPresets(); },
         },
         direction: {
             labelKey: "labelDirection",
             slider: dirSlider,
-            format(v) { return v + "°"; },
+            format(v) { return v + UNIT_DIRECTION; },
         },
         timeScale: {
             labelKey: "labelTimeScale",
             slider: timeScaleSlider,
-            format(v) { return getTimeScale() + " s/s"; },
+            format(v) { return getTimeScale() + UNIT_TIMESCALE; },
         },
     };
 
@@ -973,7 +979,7 @@
         ctx.stroke();
 
         let label;
-        if (niceLen >= 1e3) label = (niceLen / 1e3).toLocaleString() + " km";
+        if (niceLen >= 1e3) label = (niceLen / 1e3).toLocaleString() + UNIT_ALTITUDE;
         else label = niceLen.toFixed(0) + " m";
 
         ctx.fillStyle = "rgba(255,255,255," + alpha + ")";
@@ -1029,8 +1035,8 @@
 
             const velEl = document.getElementById("telemVel-" + p.id);
             const altEl = document.getElementById("telemAlt-" + p.id);
-            velEl.textContent = (v / 1000).toFixed(2) + " km/s";
-            altEl.textContent = (alt / 1000).toFixed(0) + " km";
+            velEl.textContent = (v / 1000).toFixed(2) + UNIT_SPEED;
+            altEl.textContent = (alt / 1000).toFixed(0) + UNIT_ALTITUDE;
 
             const panel = document.getElementById("telem-" + p.id);
             panel.style.opacity = p.alive ? "1" : "0.45";
