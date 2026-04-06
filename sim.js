@@ -579,20 +579,38 @@
         };
     }
 
-    // Key code → parameter name mapping (add more keys per param here)
-    const PARAM_KEY_MAP = {
-        KeyR:   "speed",     Digit1: "speed",
-        KeyV:   "altitude",  Digit2: "altitude",
-        KeyU:   "direction", Digit3: "direction",
-        KeyK:   "timeScale", Digit4: "timeScale",
+    // ── Keymap ──
+    const KEYS = {
+        // Parameter modifiers (hold + direction to adjust)
+        paramSpeed:     ["KeyR", "Digit1"],
+        paramAltitude:  ["KeyV", "Digit2"],
+        paramDirection: ["KeyU", "Digit3"],
+        paramTimeScale: ["KeyK", "Digit4"],
+        // Direction keys for parameter adjustment & scale bar rotation
+        increase:       ["ArrowRight", "ArrowUp"],
+        decrease:       ["ArrowLeft",  "ArrowDown"],
+        rotateRight:    ["ArrowRight", "KeyD"],
+        rotateLeft:     ["ArrowLeft",  "KeyA"],
+        // Standalone actions
+        launch:         ["Space"],
+        resetAngle:     ["KeyO"],
+        resetView:      ["KeyC"],
     };
+
+    function keyIn(code, group) { return KEYS[group].includes(code); }
+
+    // Build param key map from KEYS
+    const PARAM_KEY_MAP = {};
+    for (const [param, group] of [["speed","paramSpeed"],["altitude","paramAltitude"],["direction","paramDirection"],["timeScale","paramTimeScale"]]) {
+        for (const code of KEYS[group]) PARAM_KEY_MAP[code] = param;
+    }
 
     function updateParamLabel(def, activeArrow) {
         const arrows = [
-            { cls: "arrow-left",  ch: "◀", codes: ["ArrowLeft"] },
-            { cls: "arrow-right", ch: "▶", codes: ["ArrowRight"] },
-            { cls: "arrow-up",    ch: "▲", codes: ["ArrowUp"] },
-            { cls: "arrow-down",  ch: "▼", codes: ["ArrowDown"] },
+            { cls: "arrow-left",  ch: "◀", codes: KEYS.decrease },
+            { cls: "arrow-right", ch: "▶", codes: KEYS.increase },
+            { cls: "arrow-up",    ch: "▲", codes: KEYS.increase },
+            { cls: "arrow-down",  ch: "▼", codes: KEYS.decrease },
         ];
         const arrowHtml = arrows.map(a => {
             const active = activeArrow && a.codes.includes(activeArrow);
@@ -614,6 +632,14 @@
     }
 
     window.addEventListener("keydown", e => {
+        // Rotate scale bar while dragging it
+        if (scaleBarDragging && (keyIn(e.code, "rotateLeft") || keyIn(e.code, "rotateRight"))) {
+            e.preventDefault();
+            const step = Math.PI / 36; // 5 degrees
+            scaleBarAngle += keyIn(e.code, "rotateRight") ? step : -step;
+            return;
+        }
+
         // Modifier key pressed — activate parameter mode
         const paramName = PARAM_KEY_MAP[e.code];
         if (paramName && activeParam !== paramName) {
@@ -627,13 +653,13 @@
         // Arrow keys while a parameter modifier is held
         if (activeParam && PARAMS[activeParam]) {
             const def = PARAMS[activeParam];
-            if (e.code === "ArrowRight" || e.code === "ArrowUp") {
+            if (keyIn(e.code, "increase")) {
                 e.preventDefault();
                 def.increase();
                 updateParamLabel(def, e.code);
                 return;
             }
-            if (e.code === "ArrowLeft" || e.code === "ArrowDown") {
+            if (keyIn(e.code, "decrease")) {
                 e.preventDefault();
                 def.decrease();
                 updateParamLabel(def, e.code);
@@ -643,9 +669,9 @@
 
         // Standalone shortcuts (only when no modifier held)
         if (!activeParam) {
-            if (e.code === "Space")  { e.preventDefault(); launch(); }
-            if (e.code === "KeyO")   { e.preventDefault(); resetAngle(); }
-            if (e.code === "KeyC")   { e.preventDefault(); resetView(); }
+            if (keyIn(e.code, "launch"))     { e.preventDefault(); launch(); }
+            if (keyIn(e.code, "resetAngle")) { e.preventDefault(); resetAngle(); }
+            if (keyIn(e.code, "resetView"))  { e.preventDefault(); resetView(); }
         }
     });
 
@@ -656,7 +682,7 @@
             hideParamLabel();
         }
         // Remove green highlight when arrow key is released
-        if (activeParam && (e.code === "ArrowRight" || e.code === "ArrowUp" || e.code === "ArrowLeft" || e.code === "ArrowDown")) {
+        if (activeParam && (keyIn(e.code, "increase") || keyIn(e.code, "decrease"))) {
             updateParamLabel(PARAMS[activeParam], null);
         }
     });
@@ -887,10 +913,11 @@
     // ── Draw scale indicator (draggable) ──
     let scaleBarOffsetX = 0;
     let scaleBarOffsetY = 0;
+    let scaleBarAngle = 0; // radians
     let scaleBarDragging = false;
     let scaleBarDragStartX = 0;
     let scaleBarDragStartY = 0;
-    let scaleBarTween = null; // {startX, startY, startTime, duration}
+    let scaleBarTween = null; // {startX, startY, startAngle, startTime, duration}
 
     function getScaleBarMetrics() {
         const targetLen = 120;
@@ -909,10 +936,17 @@
 
     function scaleBarHitTest(mx, my) {
         const { barPx, defaultX, defaultY } = getScaleBarMetrics();
-        const x = defaultX + scaleBarOffsetX;
-        const y = defaultY + scaleBarOffsetY;
+        const cx = defaultX + scaleBarOffsetX + barPx / 2;
+        const cy = defaultY + scaleBarOffsetY;
+        // rotate mouse point into scale bar's local frame
+        const cos = Math.cos(-scaleBarAngle);
+        const sin = Math.sin(-scaleBarAngle);
+        const dx = mx - cx;
+        const dy = my - cy;
+        const lx = dx * cos - dy * sin + barPx / 2;
+        const ly = dx * sin + dy * cos;
         const pad = 12;
-        return mx >= x - pad && mx <= x + barPx + pad && my >= y - 16 && my <= y + pad;
+        return lx >= -pad && lx <= barPx + pad && ly >= -16 && ly <= pad;
     }
 
     canvas.addEventListener("mousedown", e => {
@@ -936,10 +970,11 @@
     window.addEventListener("mouseup", () => {
         if (scaleBarDragging) {
             scaleBarDragging = false;
-            if (scaleBarOffsetX !== 0 || scaleBarOffsetY !== 0) {
+            if (scaleBarOffsetX !== 0 || scaleBarOffsetY !== 0 || scaleBarAngle !== 0) {
                 scaleBarTween = {
                     startX: scaleBarOffsetX,
                     startY: scaleBarOffsetY,
+                    startAngle: scaleBarAngle,
                     startTime: performance.now(),
                     duration: 300,
                 };
@@ -955,9 +990,11 @@
         const ease = 1 - Math.pow(1 - t, 3);
         scaleBarOffsetX = scaleBarTween.startX * (1 - ease);
         scaleBarOffsetY = scaleBarTween.startY * (1 - ease);
+        scaleBarAngle   = scaleBarTween.startAngle * (1 - ease);
         if (t >= 1) {
             scaleBarOffsetX = 0;
             scaleBarOffsetY = 0;
+            scaleBarAngle   = 0;
             scaleBarTween = null;
         }
     }
@@ -970,12 +1007,18 @@
         const y = defaultY + scaleBarOffsetY;
 
         const alpha = scaleBarDragging ? 0.85 : 0.5;
+
+        ctx.save();
+        ctx.translate(x + barPx / 2, y);
+        ctx.rotate(scaleBarAngle);
+        ctx.translate(-barPx / 2, 0);
+
         ctx.strokeStyle = "rgba(255,255,255," + alpha + ")";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
-        ctx.moveTo(x, y); ctx.lineTo(x + barPx, y);
-        ctx.moveTo(x + barPx, y - 4); ctx.lineTo(x + barPx, y + 4);
+        ctx.moveTo(0, -4); ctx.lineTo(0, 4);
+        ctx.moveTo(0, 0); ctx.lineTo(barPx, 0);
+        ctx.moveTo(barPx, -4); ctx.lineTo(barPx, 4);
         ctx.stroke();
 
         let label;
@@ -985,8 +1028,9 @@
         ctx.fillStyle = "rgba(255,255,255," + alpha + ")";
         ctx.font = "11px system-ui";
         ctx.textAlign = "center";
-        ctx.fillText(label, x + barPx / 2, y - 8);
+        ctx.fillText(label, barPx / 2, -8);
 
+        ctx.restore();
     }
 
     canvas.addEventListener("mousemove", e => {
