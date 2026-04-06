@@ -111,7 +111,7 @@
             descSuborbital:     "Polovina orbitální rychlosti",
             descCircular:       "Kruhová orbita v této výšce",
             descParabolic:      "Úniková rychlost v této výšce",
-            descEllipticalLow:  "Perigeum na povrchu planety",
+            descEllipticalLow:  "Perigeum téměř na povrchu planety",
             descEllipticalHigh: "Apogeum ve 2× poloměru startu",
 
             orbitSuborbital:   "Suborbitální",
