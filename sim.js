@@ -79,7 +79,7 @@
             labelTimeScale: "Krok času",
 
             btnLaunch:     "Start",
-            btnResetAngle: "Resetovat úhel",
+            btnResetAngle: "Vynulovat úhel",
             btnReset:      "Vycentrovat pohled",
             btnClearAll:   "Odstranit všechna tělesa",
 
@@ -264,10 +264,10 @@
         launch:     "Space",
         resetAngle: "O",
         reset:      "C",
-        speed:     "Hold R + ←→↑↓",
-        altitude:  "Hold V + ←→↑↓",
-        direction: "Hold U + ←→↑↓",
-        timeScale: "Hold K + ←→↑↓",
+        speed:     "Hold R/1 + ←→↑↓",
+        altitude:  "Hold V/2 + ←→↑↓",
+        direction: "Hold U/3 + ←→↑↓",
+        timeScale: "Hold K/4 + ←→↑↓",
     };
 
     // Apply icons and tooltips to buttons
@@ -476,34 +476,43 @@
     const KEY_STEP_MULTIPLIER = 5;
 
     const paramLabel = document.getElementById("param-label");
-    let activeParam = null; // which parameter modifier key is held
+    let activeParam = null; // active parameter name (e.g. "speed")
+    let activeParamKey = null; // the key code that activated it
 
-    // Parameter definitions: modifier key → slider, label key, and step callbacks
-    const PARAM_DEFS = {
-        KeyR: {
+    // Parameter definitions by name
+    const PARAMS = {
+        speed: {
             labelKey: "labelSpeed",
             value() { return parseFloat(speedSlider.value).toFixed(1) + " km/s"; },
             increase() { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
             decrease() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
         },
-        KeyV: {
+        altitude: {
             labelKey: "labelAltitude",
             value() { return parseInt(altSlider.value).toLocaleString() + " km"; },
             increase() { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
             decrease() { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
         },
-        KeyU: {
+        direction: {
             labelKey: "labelDirection",
             value() { return dirSlider.value + "°"; },
             increase() { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
             decrease() { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
         },
-        KeyK: {
+        timeScale: {
             labelKey: "labelTimeScale",
             value() { return timeScaleSlider.value + "×"; },
             increase() { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
             decrease() { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
         },
+    };
+
+    // Key code → parameter name mapping (add more keys per param here)
+    const PARAM_KEY_MAP = {
+        KeyR:   "speed",     Digit1: "speed",
+        KeyV:   "altitude",  Digit2: "altitude",
+        KeyU:   "direction", Digit3: "direction",
+        KeyK:   "timeScale", Digit4: "timeScale",
     };
 
     function updateParamLabel(def, activeArrow) {
@@ -534,16 +543,18 @@
 
     window.addEventListener("keydown", e => {
         // Modifier key pressed — activate parameter mode
-        if (PARAM_DEFS[e.code] && activeParam !== e.code) {
+        const paramName = PARAM_KEY_MAP[e.code];
+        if (paramName && activeParam !== paramName) {
             e.preventDefault();
-            activeParam = e.code;
-            showParamLabel(PARAM_DEFS[e.code]);
+            activeParam = paramName;
+            activeParamKey = e.code;
+            showParamLabel(PARAMS[paramName]);
             return;
         }
 
         // Arrow keys while a parameter modifier is held
-        if (activeParam && PARAM_DEFS[activeParam]) {
-            const def = PARAM_DEFS[activeParam];
+        if (activeParam && PARAMS[activeParam]) {
+            const def = PARAMS[activeParam];
             if (e.code === "ArrowRight" || e.code === "ArrowUp") {
                 e.preventDefault();
                 def.increase();
@@ -567,13 +578,14 @@
     });
 
     window.addEventListener("keyup", e => {
-        if (e.code === activeParam) {
+        if (e.code === activeParamKey) {
             activeParam = null;
+            activeParamKey = null;
             hideParamLabel();
         }
         // Remove green highlight when arrow key is released
         if (activeParam && (e.code === "ArrowRight" || e.code === "ArrowUp" || e.code === "ArrowLeft" || e.code === "ArrowDown")) {
-            updateParamLabel(PARAM_DEFS[activeParam], null);
+            updateParamLabel(PARAMS[activeParam], null);
         }
     });
 
