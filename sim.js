@@ -884,6 +884,35 @@
         ctx.fillText(t("cannon"), cx, cy - 12);
     }
 
+    // ── Cannon dragging ──
+    let cannonDragging = false;
+
+    function cannonHitTest(mx, my) {
+        const alt = parseFloat(altSlider.value) * 1000;
+        const r = R + alt;
+        const [cx, cy] = worldToScreen(0, r);
+        const dx = mx - cx;
+        const dy = my - cy;
+        return dx * dx + dy * dy <= 20 * 20;
+    }
+
+    function updateCannonFromMouse(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = clientX - rect.left;
+        const my = clientY - rect.top;
+        const [wx, wy] = screenToWorld(mx, my);
+        const dist = Math.sqrt(wx * wx + wy * wy);
+        let alt_km = (dist - R) / 1000;
+        alt_km = Math.max(parseFloat(altSlider.min), Math.min(parseFloat(altSlider.max), alt_km));
+        // Snap to nearest step
+        const step = parseFloat(altSlider.step);
+        alt_km = Math.round(alt_km / step) * step;
+        altSlider.value = alt_km;
+        updateSliderDisplays();
+        updatePresets();
+        unselectPresets();
+    }
+
     // ── Draw trails & projectiles ──
     function drawProjectiles() {
         for (const p of projectiles) {
@@ -999,6 +1028,11 @@
     }
 
     canvas.addEventListener("mousedown", e => {
+        if (cannonHitTest(e.offsetX, e.offsetY)) {
+            cannonDragging = true;
+            e.stopPropagation();
+            return;
+        }
         if (scaleBarHitTest(e.offsetX, e.offsetY)) {
             scaleBarDragging = true;
             scaleBarDragStartX = e.offsetX - scaleBarOffsetX;
@@ -1010,6 +1044,10 @@
     }, true);
 
     window.addEventListener("mousemove", e => {
+        if (cannonDragging) {
+            updateCannonFromMouse(e.clientX, e.clientY);
+            return;
+        }
         if (!scaleBarDragging) return;
         const rect = canvas.getBoundingClientRect();
         scaleBarOffsetX = (e.clientX - rect.left) - scaleBarDragStartX;
@@ -1017,6 +1055,9 @@
     });
 
     window.addEventListener("mouseup", () => {
+        if (cannonDragging) {
+            cannonDragging = false;
+        }
         if (scaleBarDragging) {
             scaleBarDragging = false;
             if (scaleBarOffsetX !== 0 || scaleBarOffsetY !== 0 || scaleBarAngle !== 0) {
@@ -1083,8 +1124,10 @@
     }
 
     canvas.addEventListener("mousemove", e => {
-        if (scaleBarDragging) {
+        if (cannonDragging || scaleBarDragging) {
             canvas.style.cursor = "grabbing";
+        } else if (cannonHitTest(e.offsetX, e.offsetY)) {
+            canvas.style.cursor = "ns-resize";
         } else if (scaleBarHitTest(e.offsetX, e.offsetY)) {
             canvas.style.cursor = "grab";
         } else {
