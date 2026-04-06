@@ -22,6 +22,7 @@
             // Labels
             labelSpeed:     "Speed",
             labelAltitude:  "Altitude above surface",
+            labelDirection: "Launch angle",
             labelTimeScale: "Simulation speed",
 
             // Buttons
@@ -73,6 +74,7 @@
 
             labelSpeed:     "Rychlost",
             labelAltitude:  "Výška nad povrchem",
+            labelDirection: "Úhel startu",
             labelTimeScale: "Rychlost simulace",
 
             btnLaunch: "Start",
@@ -194,10 +196,12 @@
     // ── UI elements ──
     const speedSlider     = document.getElementById("speed");
     const altSlider       = document.getElementById("altitude");
+    const dirSlider       = document.getElementById("direction");
     const timeScaleSlider = document.getElementById("timeScale");
 
     const speedVal     = document.getElementById("speedValue");
     const altVal       = document.getElementById("altitudeValue");
+    const dirVal       = document.getElementById("directionValue");
     const timeScaleVal = document.getElementById("timeScaleValue");
 
     const launchBtn = document.getElementById("launchBtn");
@@ -211,10 +215,11 @@
     function updateSliderDisplays() {
         speedVal.textContent     = parseFloat(speedSlider.value).toFixed(1) + " km/s";
         altVal.textContent       = parseInt(altSlider.value).toLocaleString() + " km";
+        dirVal.textContent       = dirSlider.value + "°";
         timeScaleVal.textContent = timeScaleSlider.value + "×";
     }
 
-    [speedSlider, altSlider, timeScaleSlider].forEach(s =>
+    [speedSlider, altSlider, dirSlider, timeScaleSlider].forEach(s =>
         s.addEventListener("input", updateSliderDisplays)
     );
 
@@ -258,6 +263,7 @@
         reset:     "R",
         speed:     "← / → or A / D",
         altitude:  "↑ / ↓ or W / S",
+        direction: "Z / X",
         timeScale: "Q / E",
     };
 
@@ -275,6 +281,7 @@
 
     speedSlider.title     = TOOLTIPS.speed;
     altSlider.title       = TOOLTIPS.altitude;
+    dirSlider.title       = TOOLTIPS.direction;
     timeScaleSlider.title = TOOLTIPS.timeScale;
 
     const PRESET_ICONS = {
@@ -411,9 +418,11 @@
         const x = 0;
         const y = r;
 
-        // Velocity: always horizontal (tangent at top)
-        const vx = speed;
-        const vy = 0;
+        // Velocity: rotated by launch angle from tangent at top
+        const angleDeg = parseFloat(dirSlider.value);
+        const angleRad = angleDeg * Math.PI / 180;
+        const vx = speed * Math.cos(angleRad);
+        const vy = speed * Math.sin(angleRad);
 
         const cls = classifyOrbit(speed_km, alt_km);
         const color = trailColors[colorIdx % trailColors.length];
@@ -461,6 +470,8 @@
         speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
         altUp()       { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
         altDown()     { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
+        dirUp()       { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
+        dirDown()     { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
         timeUp()      { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
         timeDown()    { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
     };
@@ -477,6 +488,8 @@
         KeyA:       keyActions.speedDown,
         KeyW:       keyActions.altUp,
         KeyS:       keyActions.altDown,
+        KeyX:       keyActions.dirUp,
+        KeyZ:       keyActions.dirDown,
         KeyE:       keyActions.timeUp,
         KeyQ:       keyActions.timeDown,
     };
@@ -593,12 +606,17 @@
         ctx.fillStyle = "#fbbf24";
         ctx.fill();
 
-        // Direction arrow (scales with speed)
+        // Direction arrow (scales with speed, rotated by launch angle)
         const speed_km = parseFloat(speedSlider.value);
         const maxSpeed = parseFloat(speedSlider.max);
+        const angleDeg = parseFloat(dirSlider.value);
+        const angleRad = angleDeg * Math.PI / 180;
         const len = 15 + 45 * (speed_km / maxSpeed);
-        const ex = cx + len;
-        const ey = cy;
+        // screen coords: +x right, +y down; world angle: 0=right, positive=up
+        const dx =  Math.cos(angleRad) * len;
+        const dy = -Math.sin(angleRad) * len;
+        const ex = cx + dx;
+        const ey = cy + dy;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(ex, ey);
@@ -607,11 +625,17 @@
         ctx.stroke();
 
         // arrowhead
+        const aLen = 8;
+        const aHalf = 5;
+        const ux = dx / len;
+        const uy = dy / len;
+        const px = -uy;
+        const py =  ux;
         ctx.beginPath();
         ctx.moveTo(ex, ey);
-        ctx.lineTo(ex - 8, ey - 5);
+        ctx.lineTo(ex - ux * aLen + px * aHalf, ey - uy * aLen + py * aHalf);
         ctx.moveTo(ex, ey);
-        ctx.lineTo(ex - 8, ey + 5);
+        ctx.lineTo(ex - ux * aLen - px * aHalf, ey - uy * aLen - py * aHalf);
         ctx.strokeStyle = "#fbbf24";
         ctx.lineWidth = 2;
         ctx.stroke();
