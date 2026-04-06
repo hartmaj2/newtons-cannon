@@ -104,6 +104,27 @@ label {
     color: var(--accent);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 0 4px;
+}
+
+.value-display:hover {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.value-input {
+    width: 80px;
+    background: var(--panel-border);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: var(--label-font-size);
+    font-variant-numeric: tabular-nums;
+    padding: 0 4px;
+    outline: none;
+    text-align: right;
 }
 
 /* Range inputs */

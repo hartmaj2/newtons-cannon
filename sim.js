@@ -328,6 +328,60 @@
 
     updateSliderDisplays();
 
+    // ── Click-to-edit on value displays ──
+    const VALUE_DISPLAY_MAP = {
+        speedValue:     { slider: speedSlider, name: "speed",     parse: parseFloat, suffix: UNIT_SPEED },
+        altitudeValue:  { slider: altSlider,   name: "altitude",  parse: parseInt,   suffix: UNIT_ALTITUDE },
+        directionValue: { slider: dirSlider,   name: "direction", parse: parseFloat, suffix: UNIT_DIRECTION },
+        timeScaleValue: { slider: timeScaleSlider, name: "timeScale", parse: parseFloat, suffix: UNIT_TIMESCALE, isTimeScale: true },
+    };
+
+    for (const [elId, cfg] of Object.entries(VALUE_DISPLAY_MAP)) {
+        const span = document.getElementById(elId);
+        span.addEventListener("click", () => {
+            if (span.querySelector("input")) return; // already editing
+            const scfg = SLIDER_CONFIG[cfg.name];
+            const currentRaw = cfg.isTimeScale
+                ? getTimeScale()
+                : cfg.parse(cfg.slider.value);
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "value-input";
+            input.value = currentRaw;
+            span.textContent = "";
+            span.appendChild(input);
+            input.focus();
+            input.select();
+
+            function commit() {
+                let val = cfg.parse(input.value);
+                if (isNaN(val)) val = cfg.parse(cfg.slider.value);
+                if (cfg.isTimeScale) {
+                    // Convert from display value (e.g. 100) to slider exponent
+                    val = Math.max(1, val);
+                    let exp = Math.round(Math.log10(val));
+                    exp = Math.max(scfg.min, Math.min(scfg.max, exp));
+                    cfg.slider.value = exp;
+                } else {
+                    val = Math.max(scfg.min, Math.min(scfg.max, val));
+                    // Snap to step
+                    val = Math.round(val / scfg.step) * scfg.step;
+                    cfg.slider.value = val;
+                }
+                updateSliderDisplays();
+                if (cfg.name !== "timeScale") unselectPresets();
+                if (cfg.name === "altitude") updatePresets();
+            }
+
+            input.addEventListener("keydown", e => {
+                if (e.key === "Enter") { commit(); input.blur(); }
+                if (e.key === "Escape") { input.blur(); }
+                e.stopPropagation();
+            });
+            input.addEventListener("blur", commit, { once: true });
+        });
+    }
+
     // ── Dynamic presets based on altitude ──
     // V_orbital at Sun's distance for 3rd cosmic speed
     const V_EARTH_ORBIT = 29780; // m/s — Earth's orbital speed around Sun
@@ -699,10 +753,10 @@
     // ── Keymap ──
     const KEYS = {
         // Parameter modifiers (hold + direction to adjust)
-        paramSpeed:     ["KeyR", "Digit1"],
-        paramAltitude:  ["KeyV", "Digit2"],
-        paramDirection: ["KeyU", "Digit3"],
-        paramTimeScale: ["KeyK", "Digit4"],
+        paramSpeed:     ["KeyR"],
+        paramAltitude:  ["KeyV"],
+        paramDirection: ["KeyU"],
+        paramTimeScale: ["KeyK"],
         // Direction keys for parameter adjustment & scale bar rotation
         increase:       ["ArrowRight", "ArrowUp"],
         decrease:       ["ArrowLeft",  "ArrowDown"],
