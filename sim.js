@@ -1252,6 +1252,55 @@
         ctx.restore();
     }
 
+    // ── Off-screen cannon indicator ──
+    function drawCannonIndicator() {
+        const alt = parseFloat(altSlider.value) * 1000;
+        const r = R + alt;
+        const [cx, cy] = worldToScreen(0, r);
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        const margin = 40;
+
+        // Check if cannon is on-screen (with some padding)
+        if (cx >= -10 && cx <= w + 10 && cy >= -10 && cy <= h + 10) return;
+
+        // Clamp to screen edge
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const dx = cx - centerX;
+        const dy = cy - centerY;
+        const angle = Math.atan2(dy, dx);
+
+        // Find intersection with screen edge (inset by margin)
+        const edgeW = w / 2 - margin;
+        const edgeH = h / 2 - margin;
+        let scale = Math.min(
+            Math.abs(edgeW / (dx || 1e-9)),
+            Math.abs(edgeH / (dy || 1e-9))
+        );
+        const ix = centerX + dx * scale;
+        const iy = centerY + dy * scale;
+
+        // Blinking alpha (soft sine pulse)
+        const pulse = 0.45 + 0.35 * Math.sin(performance.now() / 400);
+
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.translate(ix, iy);
+        ctx.rotate(angle);
+
+        // Arrow triangle
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(-6, -7);
+        ctx.lineTo(-6, 7);
+        ctx.closePath();
+        ctx.fillStyle = "#fbbf24";
+        ctx.fill();
+
+        ctx.restore();
+    }
+
     canvas.addEventListener("mousemove", e => {
         if (arrowTipDragging || cannonDragging || scaleBarDragging) {
             canvas.style.cursor = "grabbing";
@@ -1375,6 +1424,7 @@
         drawStars();
         drawPlanet();
         drawCannon();
+        drawCannonIndicator();
         drawProjectiles();
         drawScaleBar();
         updateTelemetry();
