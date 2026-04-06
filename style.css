@@ -197,6 +197,35 @@ button.primary:hover {
 }
 
 /* Telemetry */
+.telemetry-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.telemetry-header-row h2 {
+    margin-bottom: 0;
+}
+
+.clear-all-btn {
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: transparent;
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.45;
+    transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.clear-all-btn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+}
+
 #telemetryContainer {
     display: flex;
     flex-direction: column;

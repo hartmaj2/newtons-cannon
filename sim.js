@@ -26,9 +26,10 @@
             labelTimeScale: "Time step",
 
             // Buttons
-            btnLaunch: "Launch",
-            btnClear:  "Remove objects",
-            btnReset:  "Recenter View",
+            btnLaunch:     "Launch",
+            btnResetAngle: "Reset Angle",
+            btnReset:      "Recenter View",
+            btnClearAll:   "Remove all objects",
 
             // Canvas
             cannon: "Cannon",
@@ -77,9 +78,10 @@
             labelDirection: "Úhel startu",
             labelTimeScale: "Krok času",
 
-            btnLaunch: "Start",
-            btnClear:  "Odstranit tělesa",
-            btnReset:  "Vycentrovat pohled",
+            btnLaunch:     "Start",
+            btnResetAngle: "Resetovat úhel",
+            btnReset:      "Vycentrovat pohled",
+            btnClearAll:   "Odstranit všechna tělesa",
 
             cannon: "Kanón",
 
@@ -204,9 +206,10 @@
     const dirVal       = document.getElementById("directionValue");
     const timeScaleVal = document.getElementById("timeScaleValue");
 
-    const launchBtn = document.getElementById("launchBtn");
-    const clearBtn  = document.getElementById("clearBtn");
-    const resetBtn  = document.getElementById("resetBtn");
+    const launchBtn     = document.getElementById("launchBtn");
+    const resetAngleBtn = document.getElementById("resetAngleBtn");
+    const resetBtn      = document.getElementById("resetBtn");
+    const clearAllBtn   = document.getElementById("clearAllBtn");
 
     const telemetryContainer = document.getElementById("telemetryContainer");
     const telemetrySection   = document.getElementById("telemetrySection");
@@ -251,16 +254,16 @@
 
     // ── Button & preset emojis ──
     const BUTTON_ICONS = {
-        launch: "🚀",
-        clear:  "🧹",
-        reset:  "🎯",
+        launch:     "🚀",
+        resetAngle: "🧭",
+        reset:      "🎯",
     };
 
     // ── Tooltips (keyboard shortcuts) ──
     const TOOLTIPS = {
-        launch:    "Space",
-        clear:     "O",
-        reset:     "C",
+        launch:     "Space",
+        resetAngle: "O",
+        reset:      "C",
         speed:     "Hold R + ←→↑↓",
         altitude:  "Hold V + ←→↑↓",
         direction: "Hold U + ←→↑↓",
@@ -269,15 +272,16 @@
 
     // Apply icons and tooltips to buttons
     function applyButtonLabels() {
-        launchBtn.textContent = BUTTON_ICONS.launch + " " + t("btnLaunch");
-        clearBtn.textContent  = BUTTON_ICONS.clear  + " " + t("btnClear");
-        resetBtn.textContent  = BUTTON_ICONS.reset  + " " + t("btnReset");
+        launchBtn.textContent     = BUTTON_ICONS.launch     + " " + t("btnLaunch");
+        resetAngleBtn.textContent = BUTTON_ICONS.resetAngle + " " + t("btnResetAngle");
+        resetBtn.textContent      = BUTTON_ICONS.reset      + " " + t("btnReset");
+        clearAllBtn.title         = t("btnClearAll");
     }
     applyButtonLabels();
 
-    launchBtn.title = TOOLTIPS.launch;
-    clearBtn.title  = TOOLTIPS.clear;
-    resetBtn.title  = TOOLTIPS.reset;
+    launchBtn.title     = TOOLTIPS.launch;
+    resetAngleBtn.title = TOOLTIPS.resetAngle;
+    resetBtn.title      = TOOLTIPS.reset;
 
     speedSlider.title     = TOOLTIPS.speed;
     altSlider.title       = TOOLTIPS.altitude;
@@ -450,6 +454,11 @@
         telemetrySection.style.display = "";
     }
 
+    function resetAngle() {
+        dirSlider.value = 0;
+        updateSliderDisplays();
+    }
+
     function clearTraces()
     {
         projectiles.length = 0;
@@ -459,7 +468,8 @@
     }
 
     launchBtn.addEventListener("click", launch);
-    clearBtn.addEventListener("click", clearTraces);
+    resetAngleBtn.addEventListener("click", resetAngle);
+    clearAllBtn.addEventListener("click", clearTraces);
     resetBtn.addEventListener("click", resetView);
 
     // Keyboard shortcuts
@@ -551,7 +561,7 @@
         // Standalone shortcuts (only when no modifier held)
         if (!activeParam) {
             if (e.code === "Space")  { e.preventDefault(); launch(); }
-            if (e.code === "KeyO")   { e.preventDefault(); clearTraces(); }
+            if (e.code === "KeyO")   { e.preventDefault(); resetAngle(); }
             if (e.code === "KeyC")   { e.preventDefault(); resetView(); }
         }
     });

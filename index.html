@@ -50,13 +50,16 @@
                 </label>
                 <div class="sim-buttons">
                     <button id="launchBtn" class="primary">🚀 Launch</button>
-                    <button id="clearBtn">🧹 Clear Traces</button>
+                    <button id="resetAngleBtn">🧭 Reset Angle</button>
                     <button id="resetBtn">🎯 Reset View</button>
                 </div>
             </section>
 
             <section class="control-group info-panel" id="telemetrySection" style="display:none">
-                <h2 data-i18n="headingTelemetry">Telemetry</h2>
+                <div class="telemetry-header-row">
+                    <h2 data-i18n="headingTelemetry">Telemetry</h2>
+                    <button id="clearAllBtn" class="clear-all-btn" title="Remove all objects">🗑️</button>
+                </div>
                 <div id="telemetryContainer"></div>
             </section>
 
