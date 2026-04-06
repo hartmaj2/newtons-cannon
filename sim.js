@@ -67,7 +67,6 @@
             infoG:        "Gravitational constant",
             infoM:        "Earth mass",
             infoR:        "Earth radius",
-            infoGM:       "Standard grav. parameter",
 
             // Language toggle
             langLabel: "🇬🇧 EN",
@@ -120,7 +119,6 @@
             infoG:        "Gravitační konstanta",
             infoM:        "Hmotnost Země",
             infoR:        "Poloměr Země",
-            infoGM:       "Stand. grav. parametr",
 
             langLabel: "🇨🇿 CZ",
         },
@@ -405,7 +403,6 @@
     document.getElementById("infoValG").textContent  = "G = " + sciNote(G, "N·m²/kg²");
     document.getElementById("infoValM").textContent  = "M = " + sciNote(M, "kg");
     document.getElementById("infoValR").textContent  = "R = " + (R / 1e3).toLocaleString() + " km";
-    document.getElementById("infoValGM").textContent = "GM = " + sciNote(GM, "m³/s²");
 
     function setLocale(lang) {
         currentLocale = lang;
