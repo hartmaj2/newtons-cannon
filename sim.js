@@ -73,6 +73,7 @@
             tipResetAngle:  "Press O",
             tipRecenter:    "Press C",
             tipHold:        "Hold",
+            tipIndicatorRecenter: "Click to recenter view",
 
             // Language toggle
             langLabel: "🇬🇧 EN",
@@ -130,6 +131,7 @@
             tipResetAngle:  "Klávesa O",
             tipRecenter:    "Klávesa C",
             tipHold:        "Držet",
+            tipIndicatorRecenter: "Klikněte pro vycentrování pohledu",
 
             langLabel: "🇨🇿 CZ",
         },
@@ -302,8 +304,6 @@
     const timeScaleVal = document.getElementById("timeScaleValue");
 
     const launchBtn     = document.getElementById("launchBtn");
-    const resetAngleBtn = document.getElementById("resetAngleBtn");
-    const resetBtn      = document.getElementById("resetBtn");
     const clearAllBtn   = document.getElementById("clearAllBtn");
 
     const telemetryContainer = document.getElementById("telemetryContainer");
@@ -412,13 +412,9 @@
     // Apply icons, tooltips, button labels
     function applyButtonLabels() {
         launchBtn.textContent     = BUTTON_ICONS.launch     + " " + t("btnLaunch");
-        resetAngleBtn.textContent = BUTTON_ICONS.resetAngle + " " + t("btnResetAngle");
-        resetBtn.textContent      = BUTTON_ICONS.reset      + " " + t("btnReset");
         clearAllBtn.title         = t("btnClearAll");
 
         launchBtn.title     = t("tipLaunch");
-        resetAngleBtn.title = t("tipResetAngle");
-        resetBtn.title      = t("tipRecenter");
 
         const hold = t("tipHold");
         speedSlider.title     = hold + " R + ←→↑↓";
@@ -699,9 +695,7 @@
     }
 
     launchBtn.addEventListener("click", () => { launch(); closePanelIfMobile(); });
-    resetAngleBtn.addEventListener("click", resetAngle);
     clearAllBtn.addEventListener("click", clearTraces);
-    resetBtn.addEventListener("click", resetView);
 
     // Keyboard shortcuts
     const paramLabel = document.getElementById("param-label");
@@ -1198,6 +1192,13 @@
         return lx >= -pad && lx <= barPx + pad && ly >= -16 && ly <= pad;
     }
 
+    function cannonIndicatorHitTest(mx, my) {
+        if (!cannonIndicatorPos) return false;
+        const dx = mx - cannonIndicatorPos.x;
+        const dy = my - cannonIndicatorPos.y;
+        return dx * dx + dy * dy <= 20 * 20;
+    }
+
     canvas.addEventListener("mousedown", e => {
         if (arrowTipHitTest(e.offsetX, e.offsetY)) {
             arrowTipDragging = true;
@@ -1206,6 +1207,11 @@
         }
         if (cannonHitTest(e.offsetX, e.offsetY)) {
             cannonDragging = true;
+            e.stopPropagation();
+            return;
+        }
+        if (cannonIndicatorHitTest(e.offsetX, e.offsetY)) {
+            resetView();
             e.stopPropagation();
             return;
         }
@@ -1307,13 +1313,14 @@
     }
 
     // ── Off-screen indicator arrows ──
+    // Returns the indicator screen position if drawn, or null if on-screen
     function drawOffscreenArrow(sx, sy, color) {
         const w = canvas.clientWidth;
         const h = canvas.clientHeight;
         const margin = 40;
 
         // Already on-screen — nothing to draw
-        if (sx >= -10 && sx <= w + 10 && sy >= -10 && sy <= h + 10) return;
+        if (sx >= -10 && sx <= w + 10 && sy >= -10 && sy <= h + 10) return null;
 
         const centerX = w / 2;
         const centerY = h / 2;
@@ -1349,13 +1356,16 @@
         ctx.fill();
 
         ctx.restore();
+        return { x: ix, y: iy };
     }
+
+    let cannonIndicatorPos = null; // last drawn indicator position
 
     function drawCannonIndicator() {
         const alt = parseFloat(altSlider.value) * 1000;
         const r = R + alt;
         const [cx, cy] = worldToScreen(0, r);
-        drawOffscreenArrow(cx, cy, "#fbbf24");
+        cannonIndicatorPos = drawOffscreenArrow(cx, cy, "#fbbf24");
     }
 
     function drawProjectileIndicators() {
@@ -1373,10 +1383,15 @@
             canvas.style.cursor = "crosshair";
         } else if (cannonHitTest(e.offsetX, e.offsetY)) {
             canvas.style.cursor = "ns-resize";
+        } else if (cannonIndicatorHitTest(e.offsetX, e.offsetY)) {
+            canvas.style.cursor = "pointer";
+            canvas.title = t("tipIndicatorRecenter");
         } else if (scaleBarHitTest(e.offsetX, e.offsetY)) {
             canvas.style.cursor = "grab";
+            canvas.title = "";
         } else {
             canvas.style.cursor = "";
+            canvas.title = "";
         }
     });
 
