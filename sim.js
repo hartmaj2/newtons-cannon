@@ -553,7 +553,7 @@
         timeScale: {
             labelKey: "labelTimeScale",
             slider: timeScaleSlider,
-            format(v) { return v + "×"; },
+            format(v) { return getTimeScale() + " s/s"; },
         },
     };
 
