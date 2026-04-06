@@ -209,7 +209,7 @@
     // ── Slider configuration ──
     const SLIDER_CONFIG = {
         speed:     { min: 0,   max: 20,   step: 0.1, keyStep: 0.5,  default: 7.9 },
-        altitude:  { min: 0,   max: 5000, step: 10,  keyStep: 50,   default: 10   },
+        altitude:  { min: 0,   max: 10000, step: 10,  keyStep: 50,   default: 10   },
         direction: { min: -90, max: 90,   step: 1,   keyStep: 5,    default: 0   },
         timeScale: { min: 0, max: 4, step: 1, keyStep: 1,  default: 2}, // changes by multiples of 10
     };
@@ -382,8 +382,54 @@
         });
     });
 
+    // ── Projectile names (real missions, satellites, rockets) ──
+    const MISSION_NAMES = [
+        "Sputnik", "Apollo", "Gemini", "Mercury", "Vostok", "Voskhod", "Soyuz",
+        "Skylab", "Mir", "Salyut", "Tiangong", "Zond", "Luna", "Ranger",
+        "Surveyor", "Mariner", "Pioneer", "Voyager", "Viking", "Galileo",
+        "Cassini", "Juno", "Rosetta", "Giotto", "Ulysses", "Kepler",
+        "Hubble", "Chandra", "Spitzer", "Fermi", "Swift", "TESS",
+        "Parker", "Dawn", "Stardust", "Genesis", "NEAR", "Hayabusa",
+        "OSIRIS-REx", "InSight", "Phoenix", "Spirit", "Opportunity",
+        "Curiosity", "Perseverance", "Ingenuity", "Sojourner", "Pathfinder",
+        "Magellan", "Venera", "Akatsuki", "BepiColombo", "Messenger",
+        "New Horizons", "Deep Impact", "ICE", "ISEE", "Explorer",
+        "Discoverer", "Corona", "Lacrosse", "Cosmos", "Molniya",
+        "Intelsat", "Telstar", "Syncom", "Echo", "Relay",
+        "Landsat", "GOES", "NOAA", "Aqua", "Terra", "Aura",
+        "CloudSat", "CALIPSO", "Sentinel", "Copernicus", "GRACE",
+        "GOCE", "CryoSat", "Aeolus", "Envisat", "ERS",
+        "Ariane", "Vega", "Titan", "Atlas", "Delta",
+        "Falcon", "Starship", "Electron", "Antares", "Minotaur",
+        "Pegasus", "Athena", "Saturn V", "N-1", "Energia",
+        "Proton", "Angara", "Zenit", "Dnepr", "Rokot",
+        "Long March", "PSLV", "GSLV", "H-IIA", "Epsilon",
+        "Diamant", "Europa", "Black Arrow", "Lambda", "Mu",
+        "Chandrayaan", "Mangalyaan", "Aditya", "Astrosat", "Cartosat",
+        "Shijian", "Beidou", "GLONASS", "Navstar", "Iridium",
+        "Starlink", "OneWeb", "Orbcomm", "Globalstar", "Thuraya",
+        "Olympus", "Artemis", "Orion", "Starliner", "Dragon",
+        "Cygnus", "Progress", "Tianzhou", "Kounotori", "ATV",
+        "Buran", "Hermes", "Clipper", "Dream Chaser", "SpaceShipTwo",
+        "X-37B", "Dyna-Soar", "Almaz", "SNAP", "Transit",
+        "Navsat", "LAGEOS", "Magion", "Proba", "LISA",
+    ];
+
+    const usedNames = new Set();
+
+    function pickName() {
+        const available = MISSION_NAMES.filter(n => !usedNames.has(n));
+        if (available.length === 0) {
+            usedNames.clear();
+            return MISSION_NAMES[Math.floor(Math.random() * MISSION_NAMES.length)];
+        }
+        const name = available[Math.floor(Math.random() * available.length)];
+        usedNames.add(name);
+        return name;
+    }
+
     // ── Projectile simulation ──
-    const projectiles = [];   // each: { id, trail, x, y, vx, vy, alive, color, label }
+    const projectiles = [];   // each: { id, name, trail, x, y, vx, vy, alive, color, label }
     let nextProjectileId = 1;
 
     // ── Language toggle ──
@@ -493,8 +539,9 @@
         colorIdx++;
 
         const id = nextProjectileId++;
+        const name = pickName();
         projectiles.push({
-            id, x, y, vx, vy,
+            id, name, x, y, vx, vy,
             trail: [{ x, y }],
             alive: true,
             color,
@@ -523,6 +570,7 @@
     {
         projectiles.length = 0;
         nextProjectileId = 1;
+        usedNames.clear();
         telemetryContainer.innerHTML = "";
         telemetrySection.style.display = "none";
     }
@@ -871,11 +919,11 @@
                 ctx.fillStyle = glow;
                 ctx.fill();
 
-                // ID label
+                // Name label
                 ctx.fillStyle = p.color;
                 ctx.font = "bold 11px system-ui";
                 ctx.textAlign = "left";
-                ctx.fillText("#" + p.id, sx + 10, sy - 6);
+                ctx.fillText(p.name, sx + 10, sy - 6);
             } else {
                 // Impact / escape marker
                 const last = p.trail[p.trail.length - 1];
@@ -885,11 +933,11 @@
                 ctx.fillStyle = "rgba(255,255,255,0.4)";
                 ctx.fill();
 
-                // ID label (dimmed)
+                // Name label (dimmed)
                 ctx.fillStyle = "rgba(255,255,255,0.4)";
                 ctx.font = "bold 11px system-ui";
                 ctx.textAlign = "left";
-                ctx.fillText("#" + p.id, sx + 8, sy - 4);
+                ctx.fillText(p.name, sx + 8, sy - 4);
             }
         }
     }
@@ -1053,14 +1101,17 @@
         panel.style.borderLeftColor = p.color;
         panel.innerHTML =
             '<div class="telem-panel-header" style="color:' + p.color + '">' +
-                '#' + p.id +
+                '<span class="telem-name">' + p.name + '</span>' +
                 '<button class="telem-close" title="' + t("telemRemove") + '">&times;</button>' +
             '</div>' +
             '<div class="telem-panel-row"><span class="telem-label">' + t("telemVelocity") + '</span><span class="telem-value" id="telemVel-' + p.id + '">—</span></div>' +
             '<div class="telem-panel-row"><span class="telem-label">' + t("telemAltitude") + '</span><span class="telem-value" id="telemAlt-' + p.id + '">—</span></div>';
         panel.querySelector(".telem-close").addEventListener("click", () => {
             const idx = projectiles.findIndex(proj => proj.id === p.id);
-            if (idx !== -1) projectiles.splice(idx, 1);
+            if (idx !== -1) {
+                usedNames.delete(p.name);
+                projectiles.splice(idx, 1);
+            }
             panel.remove();
             if (projectiles.length === 0) {
                 telemetrySection.style.display = "none";
@@ -1084,6 +1135,19 @@
 
             const panel = document.getElementById("telem-" + p.id);
             panel.style.opacity = p.alive ? "1" : "0.45";
+        }
+
+        // Sort telemetry panels: alive first, then by creation order (id)
+        const sorted = [...projectiles].sort((a, b) => {
+            if (a.alive !== b.alive) return a.alive ? -1 : 1;
+            return a.id - b.id;
+        });
+        const children = telemetryContainer.children;
+        for (let i = 0; i < sorted.length; i++) {
+            const panel = document.getElementById("telem-" + sorted[i].id);
+            if (panel && children[i] !== panel) {
+                telemetryContainer.insertBefore(panel, children[i]);
+            }
         }
     }
 
