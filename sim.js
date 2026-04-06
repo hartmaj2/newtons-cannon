@@ -23,7 +23,7 @@
             labelSpeed:     "Speed",
             labelAltitude:  "Altitude above surface",
             labelDirection: "Launch angle",
-            labelTimeScale: "Time step",
+            labelTimeScale: "Time scale",
 
             // Buttons
             btnLaunch:     "Launch",
@@ -82,7 +82,7 @@
             labelSpeed:     "Rychlost",
             labelAltitude:  "Výška nad povrchem",
             labelDirection: "Úhel startu",
-            labelTimeScale: "Krok času",
+            labelTimeScale: "Časové měřítko",
 
             btnLaunch:     "Start",
             btnResetAngle: "Vynulovat úhel",
@@ -299,13 +299,13 @@
 
     // ── Tooltips (keyboard shortcuts) ──
     const TOOLTIPS = {
-        launch:     "Space",
+        launch:     "Mezerník",
         resetAngle: "O",
-        reset:      "C",
-        speed:     "Hold R/1 + ←→↑↓",
-        altitude:  "Hold V/2 + ←→↑↓",
-        direction: "Hold U/3 + ←→↑↓",
-        timeScale: "Hold K/4 + ←→↑↓",
+        recenterView: "C",
+        speed:     "Držet R + ←→↑↓",
+        altitude:  "Držet V + ←→↑↓",
+        direction: "Držet U + ←→↑↓",
+        timeScale: "Držet K + ←→↑↓",
     };
 
     // Apply icons and tooltips to buttons
@@ -319,7 +319,7 @@
 
     launchBtn.title     = TOOLTIPS.launch;
     resetAngleBtn.title = TOOLTIPS.resetAngle;
-    resetBtn.title      = TOOLTIPS.reset;
+    resetBtn.title      = TOOLTIPS.recenterView;
 
     speedSlider.title     = TOOLTIPS.speed;
     altSlider.title       = TOOLTIPS.altitude;
@@ -1179,7 +1179,7 @@
             const dy = p.y - last.y;
             const dist2 = dx * dx + dy * dy;
             // Adaptive trail resolution based on zoom
-            const minDist = Math.max(R * 0.0002, 2 / viewScale);
+            const minDist = Math.max(R * 0.005, 2 / viewScale);
             if (dist2 > minDist * minDist) {
                 p.trail.push({ x: p.x, y: p.y });
                 if (p.trail.length > p.maxTrail) {
