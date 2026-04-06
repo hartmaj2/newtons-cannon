@@ -228,7 +228,32 @@
     let lastTouchDist = 0;
 
     canvas.addEventListener("touchstart", e => {
+        const rect = canvas.getBoundingClientRect();
+
         if (e.touches.length === 1) {
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
+
+            if (arrowTipHitTest(x, y)) {
+                arrowTipDragging = true;
+                return;
+            }
+            if (cannonHitTest(x, y)) {
+                cannonDragging = true;
+                return;
+            }
+            if (cannonIndicatorHitTest(x, y)) {
+                resetView();
+                return;
+            }
+            if (scaleBarHitTest(x, y)) {
+                scaleBarDragging = true;
+                scaleBarDragStartX = x - scaleBarOffsetX;
+                scaleBarDragStartY = y - scaleBarOffsetY;
+                scaleBarTween = null;
+                return;
+            }
+
             isPanning  = true;
             panStartX  = e.touches[0].clientX;
             panStartY  = e.touches[0].clientY;
@@ -236,6 +261,10 @@
             panOriginY = viewCenterY;
         } else if (e.touches.length === 2) {
             isPanning = false;
+            arrowTipDragging = false;
+            cannonDragging = false;
+            scaleBarDragging = false;
+
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             lastTouchDist = Math.hypot(dx, dy);
@@ -243,12 +272,43 @@
     }, { passive: true });
 
     canvas.addEventListener("touchmove", e => {
-        e.preventDefault();
-        if (e.touches.length === 1 && isPanning) {
-            const dx = e.touches[0].clientX - panStartX;
-            const dy = e.touches[0].clientY - panStartY;
-            viewCenterX = panOriginX - dx / viewScale;
-            viewCenterY = panOriginY + dy / viewScale;
+        const rect = canvas.getBoundingClientRect();
+
+        if (
+            (e.touches.length === 1 && (isPanning || arrowTipDragging || cannonDragging || scaleBarDragging)) ||
+            e.touches.length === 2
+        ) {
+            e.preventDefault();
+        }
+
+        if (e.touches.length === 1) {
+            const clientX = e.touches[0].clientX;
+            const clientY = e.touches[0].clientY;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            if (arrowTipDragging) {
+                updateArrowFromMouse(clientX, clientY);
+                return;
+            }
+
+            if (cannonDragging) {
+                updateCannonFromMouse(clientX, clientY);
+                return;
+            }
+
+            if (scaleBarDragging) {
+                scaleBarOffsetX = x - scaleBarDragStartX;
+                scaleBarOffsetY = y - scaleBarDragStartY;
+                return;
+            }
+
+            if (isPanning) {
+                const dx = clientX - panStartX;
+                const dy = clientY - panStartY;
+                viewCenterX = panOriginX - dx / viewScale;
+                viewCenterY = panOriginY + dy / viewScale;
+            }
         } else if (e.touches.length === 2) {
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
