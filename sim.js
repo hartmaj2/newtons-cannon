@@ -263,8 +263,8 @@
         reset:     "R",
         speed:     "← / → or A / D",
         altitude:  "↑ / ↓ or W / S",
-        direction: "Z / X",
-        timeScale: "Q / E",
+        direction: "Q / E",
+        timeScale: "K / L",
     };
 
     // Apply icons and tooltips to buttons
@@ -488,10 +488,10 @@
         KeyA:       keyActions.speedDown,
         KeyW:       keyActions.altUp,
         KeyS:       keyActions.altDown,
-        KeyX:       keyActions.dirUp,
-        KeyZ:       keyActions.dirDown,
-        KeyE:       keyActions.timeUp,
-        KeyQ:       keyActions.timeDown,
+        KeyQ:       keyActions.dirUp,
+        KeyE:       keyActions.dirDown,
+        KeyL:       keyActions.timeUp,
+        KeyK:       keyActions.timeDown,
     };
 
     window.addEventListener("keydown", e => {
