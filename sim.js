@@ -211,8 +211,10 @@
         speed:     { min: 0,   max: 20,   step: 0.1, keyStep: 0.5,  default: 7.9 },
         altitude:  { min: 0,   max: 5000, step: 10,  keyStep: 50,   default: 10   },
         direction: { min: -90, max: 90,   step: 1,   keyStep: 5,    default: 0   },
-        timeScale: { min: 1,   max: 20,   step: 1,   keyStep: 1,    default: 5   },
+        timeScale: { min: 0, max: 4, step: 1, keyStep: 1,  default: 2}, // changes by multiples of 10
     };
+
+    function getTimeScale() { return Math.round(Math.pow(10, parseInt(timeScaleSlider.value))); }
 
     // ── UI elements ──
     const speedSlider     = document.getElementById("speed");
@@ -248,7 +250,7 @@
         speedVal.textContent     = parseFloat(speedSlider.value).toFixed(1) + " km/s";
         altVal.textContent       = parseInt(altSlider.value).toLocaleString() + " km";
         dirVal.textContent       = dirSlider.value + "°";
-        timeScaleVal.textContent = timeScaleSlider.value + "×";
+        timeScaleVal.textContent = getTimeScale() + " s/s";
     }
 
     [speedSlider, altSlider, dirSlider, timeScaleSlider].forEach(s =>
@@ -1044,8 +1046,8 @@
         const dt_real = lastTime ? Math.min((timestamp - lastTime) / 1000, 1 / 30) : 0;
         lastTime = timestamp;
 
-        const timeScale = parseInt(timeScaleSlider.value);
-        const dt_sim = dt_real * timeScale * 100;      // speed up for visibility
+        const timeScale = getTimeScale();
+        const dt_sim = dt_real * timeScale;
 
         // Physics substeps for stability
         const substeps = Math.max(1, Math.ceil(dt_sim / 5));
