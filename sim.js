@@ -904,12 +904,66 @@
         const dist = Math.sqrt(wx * wx + wy * wy);
         let alt_km = (dist - R) / 1000;
         alt_km = Math.max(parseFloat(altSlider.min), Math.min(parseFloat(altSlider.max), alt_km));
-        // Snap to nearest step
         const step = parseFloat(altSlider.step);
         alt_km = Math.round(alt_km / step) * step;
         altSlider.value = alt_km;
         updateSliderDisplays();
         updatePresets();
+        unselectPresets();
+    }
+
+    // ── Arrow tip dragging (speed + direction) ──
+    let arrowTipDragging = false;
+
+    function getCannonScreenPos() {
+        const alt = parseFloat(altSlider.value) * 1000;
+        const r = R + alt;
+        return worldToScreen(0, r);
+    }
+
+    function getArrowTipScreenPos() {
+        const [cx, cy] = getCannonScreenPos();
+        const speed_km = parseFloat(speedSlider.value);
+        const maxSpeed = parseFloat(speedSlider.max);
+        const angleDeg = parseFloat(dirSlider.value);
+        const angleRad = angleDeg * Math.PI / 180;
+        const len = 15 + 45 * (speed_km / maxSpeed);
+        return [cx + Math.cos(angleRad) * len, cy - Math.sin(angleRad) * len];
+    }
+
+    function arrowTipHitTest(mx, my) {
+        const [tx, ty] = getArrowTipScreenPos();
+        const dx = mx - tx;
+        const dy = my - ty;
+        return dx * dx + dy * dy <= 14 * 14;
+    }
+
+    function snapToStep(value, cfg) {
+        const clamped = Math.max(cfg.min, Math.min(cfg.max, value));
+        return Math.round(clamped / cfg.step) * cfg.step;
+    }
+
+    function updateArrowFromMouse(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = clientX - rect.left;
+        const my = clientY - rect.top;
+        const [cx, cy] = getCannonScreenPos();
+        const dx = mx - cx;
+        const dy = my - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Angle: screen y is flipped, so negate dy
+        let angleDeg = Math.atan2(-dy, dx) * 180 / Math.PI;
+        angleDeg = snapToStep(angleDeg, SLIDER_CONFIG.direction);
+        dirSlider.value = angleDeg;
+
+        // Speed: reverse len = 15 + 45 * (speed_km / maxSpeed)
+        const maxSpeed = parseFloat(speedSlider.max);
+        let speed_km = Math.max(0, (dist - 15) / 45) * maxSpeed;
+        speed_km = snapToStep(speed_km, SLIDER_CONFIG.speed);
+        speedSlider.value = speed_km;
+
+        updateSliderDisplays();
         unselectPresets();
     }
 
@@ -1028,6 +1082,11 @@
     }
 
     canvas.addEventListener("mousedown", e => {
+        if (arrowTipHitTest(e.offsetX, e.offsetY)) {
+            arrowTipDragging = true;
+            e.stopPropagation();
+            return;
+        }
         if (cannonHitTest(e.offsetX, e.offsetY)) {
             cannonDragging = true;
             e.stopPropagation();
@@ -1044,6 +1103,10 @@
     }, true);
 
     window.addEventListener("mousemove", e => {
+        if (arrowTipDragging) {
+            updateArrowFromMouse(e.clientX, e.clientY);
+            return;
+        }
         if (cannonDragging) {
             updateCannonFromMouse(e.clientX, e.clientY);
             return;
@@ -1055,6 +1118,9 @@
     });
 
     window.addEventListener("mouseup", () => {
+        if (arrowTipDragging) {
+            arrowTipDragging = false;
+        }
         if (cannonDragging) {
             cannonDragging = false;
         }
@@ -1124,8 +1190,10 @@
     }
 
     canvas.addEventListener("mousemove", e => {
-        if (cannonDragging || scaleBarDragging) {
+        if (arrowTipDragging || cannonDragging || scaleBarDragging) {
             canvas.style.cursor = "grabbing";
+        } else if (arrowTipHitTest(e.offsetX, e.offsetY)) {
+            canvas.style.cursor = "crosshair";
         } else if (cannonHitTest(e.offsetX, e.offsetY)) {
             canvas.style.cursor = "ns-resize";
         } else if (scaleBarHitTest(e.offsetX, e.offsetY)) {
