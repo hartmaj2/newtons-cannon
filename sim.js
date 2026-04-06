@@ -534,6 +534,7 @@
     document.querySelectorAll(".preset").forEach(btn => {
         btn.addEventListener("click", () => {
             speedSlider.value = btn.dataset.speed;
+            dirSlider.value = 0;
             updateSliderDisplays();
             document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
