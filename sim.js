@@ -208,11 +208,29 @@
         viewCenterY = wy + (e.offsetY - canvas.clientHeight / 2) / viewScale;
     }, { passive: false });
 
+    // ── Slider configuration ──
+    const SLIDER_CONFIG = {
+        speed:     { min: 0,   max: 20,   step: 0.1, keyStep: 0.5,  default: 7.9 },
+        altitude:  { min: 0,   max: 5000, step: 10,  keyStep: 50,   default: 10   },
+        direction: { min: -90, max: 90,   step: 1,   keyStep: 5,    default: 0   },
+        timeScale: { min: 1,   max: 20,   step: 1,   keyStep: 1,    default: 5   },
+    };
+
     // ── UI elements ──
     const speedSlider     = document.getElementById("speed");
     const altSlider       = document.getElementById("altitude");
     const dirSlider       = document.getElementById("direction");
     const timeScaleSlider = document.getElementById("timeScale");
+
+    // Apply config to sliders
+    const SLIDER_MAP = { speed: speedSlider, altitude: altSlider, direction: dirSlider, timeScale: timeScaleSlider };
+    for (const [name, cfg] of Object.entries(SLIDER_CONFIG)) {
+        const el = SLIDER_MAP[name];
+        el.min   = cfg.min;
+        el.max   = cfg.max;
+        el.step  = cfg.step;
+        el.value = cfg.default;
+    }
 
     const speedVal     = document.getElementById("speedValue");
     const altVal       = document.getElementById("altitudeValue");
@@ -510,39 +528,51 @@
     resetBtn.addEventListener("click", resetView);
 
     // Keyboard shortcuts
-    const KEY_STEP_MULTIPLIER = 5;
-
     const paramLabel = document.getElementById("param-label");
     let activeParam = null; // active parameter name (e.g. "speed")
     let activeParamKey = null; // the key code that activated it
 
-    // Parameter definitions by name
+    // Parameter definitions by name (driven by SLIDER_CONFIG)
     const PARAMS = {
         speed: {
             labelKey: "labelSpeed",
-            value() { return parseFloat(speedSlider.value).toFixed(1) + " km/s"; },
-            increase() { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
-            decrease() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
+            slider: speedSlider,
+            format(v) { return parseFloat(v).toFixed(1) + " km/s"; },
+            onchange() { unselectPresets(); },
         },
         altitude: {
             labelKey: "labelAltitude",
-            value() { return parseInt(altSlider.value).toLocaleString() + " km"; },
-            increase() { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
-            decrease() { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
+            slider: altSlider,
+            format(v) { return parseInt(v).toLocaleString() + " km"; },
+            onchange() { updatePresets(); unselectPresets(); },
         },
         direction: {
             labelKey: "labelDirection",
-            value() { return dirSlider.value + "°"; },
-            increase() { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
-            decrease() { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
+            slider: dirSlider,
+            format(v) { return v + "°"; },
         },
         timeScale: {
             labelKey: "labelTimeScale",
-            value() { return timeScaleSlider.value + "×"; },
-            increase() { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
-            decrease() { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
+            slider: timeScaleSlider,
+            format(v) { return v + "×"; },
         },
     };
+
+    // Generic increase/decrease using SLIDER_CONFIG
+    for (const [name, def] of Object.entries(PARAMS)) {
+        const cfg = SLIDER_CONFIG[name];
+        def.value = function() { return def.format(def.slider.value); };
+        def.increase = function() {
+            def.slider.value = Math.min(cfg.max, parseFloat(def.slider.value) + cfg.keyStep);
+            updateSliderDisplays();
+            if (def.onchange) def.onchange();
+        };
+        def.decrease = function() {
+            def.slider.value = Math.max(cfg.min, parseFloat(def.slider.value) - cfg.keyStep);
+            updateSliderDisplays();
+            if (def.onchange) def.onchange();
+        };
+    }
 
     // Key code → parameter name mapping (add more keys per param here)
     const PARAM_KEY_MAP = {
