@@ -496,15 +496,25 @@
         },
     };
 
-    function updateParamLabel(def) {
+    function updateParamLabel(def, activeArrow) {
+        const arrows = [
+            { cls: "arrow-left",  ch: "◀", codes: ["ArrowLeft"] },
+            { cls: "arrow-right", ch: "▶", codes: ["ArrowRight"] },
+            { cls: "arrow-up",    ch: "▲", codes: ["ArrowUp"] },
+            { cls: "arrow-down",  ch: "▼", codes: ["ArrowDown"] },
+        ];
+        const arrowHtml = arrows.map(a => {
+            const active = activeArrow && a.codes.includes(activeArrow);
+            return '<span class="param-arrow' + (active ? ' arrow-active' : '') + '">' + a.ch + '</span>';
+        }).join(' ');
         paramLabel.innerHTML =
             '<div class="param-name">' + t(def.labelKey) + '</div>' +
-            '<div class="param-arrows">◀ ▶ ▲ ▼</div>' +
+            '<div class="param-arrows">' + arrowHtml + '</div>' +
             '<div class="param-value">' + def.value() + '</div>';
     }
 
     function showParamLabel(def) {
-        updateParamLabel(def);
+        updateParamLabel(def, null);
         paramLabel.classList.add("visible");
     }
 
@@ -527,13 +537,13 @@
             if (e.code === "ArrowRight" || e.code === "ArrowUp") {
                 e.preventDefault();
                 def.increase();
-                updateParamLabel(def);
+                updateParamLabel(def, e.code);
                 return;
             }
             if (e.code === "ArrowLeft" || e.code === "ArrowDown") {
                 e.preventDefault();
                 def.decrease();
-                updateParamLabel(def);
+                updateParamLabel(def, e.code);
                 return;
             }
         }
@@ -550,6 +560,10 @@
         if (e.code === activeParam) {
             activeParam = null;
             hideParamLabel();
+        }
+        // Remove green highlight when arrow key is released
+        if (activeParam && (e.code === "ArrowRight" || e.code === "ArrowUp" || e.code === "ArrowLeft" || e.code === "ArrowDown")) {
+            updateParamLabel(PARAM_DEFS[activeParam], null);
         }
     });
 
