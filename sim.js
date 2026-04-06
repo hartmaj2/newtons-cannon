@@ -23,7 +23,7 @@
             labelSpeed:     "Speed",
             labelAltitude:  "Altitude above surface",
             labelDirection: "Launch angle",
-            labelTimeScale: "Simulation speed",
+            labelTimeScale: "Time step",
 
             // Buttons
             btnLaunch: "Launch",
@@ -75,7 +75,7 @@
             labelSpeed:     "Rychlost",
             labelAltitude:  "Výška nad povrchem",
             labelDirection: "Úhel startu",
-            labelTimeScale: "Rychlost simulace",
+            labelTimeScale: "Krok času",
 
             btnLaunch: "Start",
             btnClear:  "Odstranit tělesa",
@@ -111,7 +111,7 @@
         },
     };
 
-    let currentLocale = "en";
+    let currentLocale = "cs";
 
     function t(key) {
         return LOCALES[currentLocale][key] || LOCALES.en[key] || key;
@@ -259,12 +259,12 @@
     // ── Tooltips (keyboard shortcuts) ──
     const TOOLTIPS = {
         launch:    "Space",
-        clear:     "C",
-        reset:     "R",
-        speed:     "Hold S + ←→↑↓",
-        altitude:  "Hold A + ←→↑↓",
-        direction: "Hold D + ←→↑↓",
-        timeScale: "Hold T + ←→↑↓",
+        clear:     "O",
+        reset:     "C",
+        speed:     "Hold R + ←→↑↓",
+        altitude:  "Hold V + ←→↑↓",
+        direction: "Hold U + ←→↑↓",
+        timeScale: "Hold K + ←→↑↓",
     };
 
     // Apply icons and tooltips to buttons
@@ -470,25 +470,25 @@
 
     // Parameter definitions: modifier key → slider, label key, and step callbacks
     const PARAM_DEFS = {
-        KeyS: {
+        KeyR: {
             labelKey: "labelSpeed",
             value() { return parseFloat(speedSlider.value).toFixed(1) + " km/s"; },
             increase() { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
             decrease() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
         },
-        KeyA: {
+        KeyV: {
             labelKey: "labelAltitude",
             value() { return parseInt(altSlider.value).toLocaleString() + " km"; },
             increase() { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
             decrease() { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
         },
-        KeyD: {
+        KeyU: {
             labelKey: "labelDirection",
             value() { return dirSlider.value + "°"; },
             increase() { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
             decrease() { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
         },
-        KeyT: {
+        KeyK: {
             labelKey: "labelTimeScale",
             value() { return timeScaleSlider.value + "×"; },
             increase() { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
@@ -551,8 +551,8 @@
         // Standalone shortcuts (only when no modifier held)
         if (!activeParam) {
             if (e.code === "Space")  { e.preventDefault(); launch(); }
-            if (e.code === "KeyC")   { e.preventDefault(); clearTraces(); }
-            if (e.code === "KeyR")   { e.preventDefault(); resetView(); }
+            if (e.code === "KeyO")   { e.preventDefault(); clearTraces(); }
+            if (e.code === "KeyC")   { e.preventDefault(); resetView(); }
         }
     });
 

@@ -348,25 +348,40 @@ button.primary:hover {
 }
 
 #param-label .param-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--accent);
 }
 
 #param-label .param-value {
-    font-size: 2.4rem;
-    font-weight: 800;
+    font-size: 1.1rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
 }
 
 #param-label .param-arrows {
     font-size: 0.85rem;
     letter-spacing: 0.3em;
     color: var(--text-dim);
-    opacity: 0.6;
+}
+
+#param-label .param-arrow {
+    display: inline-block;
+    animation: arrowBlink 1s ease-in-out infinite;
+    transition: color 0.1s;
+}
+
+#param-label .param-arrow.arrow-active {
+    color: var(--success);
+    animation: none;
+}
+
+@keyframes arrowBlink {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
 }
 
 #param-label.visible {
