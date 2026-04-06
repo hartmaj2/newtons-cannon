@@ -326,6 +326,53 @@ button.primary:hover {
     opacity: 1;
 }
 
+#param-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 24px 44px;
+    background: rgba(0,0,0,0.8);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+    color: var(--text);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+#param-label .param-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+}
+
+#param-label .param-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+}
+
+#param-label .param-arrows {
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    opacity: 0.6;
+}
+
+#param-label.visible {
+    opacity: 1;
+}
+
 /* Scrollbar */
 #controls::-webkit-scrollbar {
     width: 6px;

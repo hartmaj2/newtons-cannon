@@ -261,10 +261,10 @@
         launch:    "Space",
         clear:     "C",
         reset:     "R",
-        speed:     "← / → or A / D",
-        altitude:  "↑ / ↓ or W / S",
-        direction: "Q / E",
-        timeScale: "K / L",
+        speed:     "Hold S + ←→↑↓",
+        altitude:  "Hold A + ←→↑↓",
+        direction: "Hold D + ←→↑↓",
+        timeScale: "Hold T + ←→↑↓",
     };
 
     // Apply icons and tooltips to buttons
@@ -465,38 +465,92 @@
     // Keyboard shortcuts
     const KEY_STEP_MULTIPLIER = 5;
 
-    const keyActions = {
-        speedUp()   { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
-        speedDown() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
-        altUp()       { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
-        altDown()     { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
-        dirUp()       { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
-        dirDown()     { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
-        timeUp()      { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
-        timeDown()    { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
+    const paramLabel = document.getElementById("param-label");
+    let activeParam = null; // which parameter modifier key is held
+
+    // Parameter definitions: modifier key → slider, label key, and step callbacks
+    const PARAM_DEFS = {
+        KeyS: {
+            labelKey: "labelSpeed",
+            value() { return parseFloat(speedSlider.value).toFixed(1) + " km/s"; },
+            increase() { speedSlider.value = Math.min(parseFloat(speedSlider.max), parseFloat(speedSlider.value) + parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
+            decrease() { speedSlider.value = Math.max(parseFloat(speedSlider.min), parseFloat(speedSlider.value) - parseFloat(speedSlider.step || 0.1) * KEY_STEP_MULTIPLIER).toFixed(1); updateSliderDisplays(); unselectPresets(); },
+        },
+        KeyA: {
+            labelKey: "labelAltitude",
+            value() { return parseInt(altSlider.value).toLocaleString() + " km"; },
+            increase() { altSlider.value = Math.min(parseFloat(altSlider.max), parseFloat(altSlider.value) + parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
+            decrease() { altSlider.value = Math.max(parseFloat(altSlider.min), parseFloat(altSlider.value) - parseFloat(altSlider.step || 10) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); updatePresets(); unselectPresets(); },
+        },
+        KeyD: {
+            labelKey: "labelDirection",
+            value() { return dirSlider.value + "°"; },
+            increase() { dirSlider.value = Math.min(parseFloat(dirSlider.max), parseFloat(dirSlider.value) + parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
+            decrease() { dirSlider.value = Math.max(parseFloat(dirSlider.min), parseFloat(dirSlider.value) - parseFloat(dirSlider.step || 1) * KEY_STEP_MULTIPLIER); updateSliderDisplays(); },
+        },
+        KeyT: {
+            labelKey: "labelTimeScale",
+            value() { return timeScaleSlider.value + "×"; },
+            increase() { timeScaleSlider.value = Math.min(parseFloat(timeScaleSlider.max), parseFloat(timeScaleSlider.value) + parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
+            decrease() { timeScaleSlider.value = Math.max(parseFloat(timeScaleSlider.min), parseFloat(timeScaleSlider.value) - parseFloat(timeScaleSlider.step || 1)); updateSliderDisplays(); },
+        },
     };
 
-    const keyMap = {
-        KeyR : resetView,
-        KeyC : clearTraces,
-        Space:      launch,
-        ArrowRight: keyActions.speedUp,
-        ArrowLeft:  keyActions.speedDown,
-        ArrowUp:    keyActions.altUp,
-        ArrowDown:  keyActions.altDown,
-        KeyD:       keyActions.speedUp,
-        KeyA:       keyActions.speedDown,
-        KeyW:       keyActions.altUp,
-        KeyS:       keyActions.altDown,
-        KeyQ:       keyActions.dirUp,
-        KeyE:       keyActions.dirDown,
-        KeyL:       keyActions.timeUp,
-        KeyK:       keyActions.timeDown,
-    };
+    function updateParamLabel(def) {
+        paramLabel.innerHTML =
+            '<div class="param-name">' + t(def.labelKey) + '</div>' +
+            '<div class="param-arrows">◀ ▶ ▲ ▼</div>' +
+            '<div class="param-value">' + def.value() + '</div>';
+    }
+
+    function showParamLabel(def) {
+        updateParamLabel(def);
+        paramLabel.classList.add("visible");
+    }
+
+    function hideParamLabel() {
+        paramLabel.classList.remove("visible");
+    }
 
     window.addEventListener("keydown", e => {
-        const action = keyMap[e.code];
-        if (action) { e.preventDefault(); action(); }
+        // Modifier key pressed — activate parameter mode
+        if (PARAM_DEFS[e.code] && activeParam !== e.code) {
+            e.preventDefault();
+            activeParam = e.code;
+            showParamLabel(PARAM_DEFS[e.code]);
+            return;
+        }
+
+        // Arrow keys while a parameter modifier is held
+        if (activeParam && PARAM_DEFS[activeParam]) {
+            const def = PARAM_DEFS[activeParam];
+            if (e.code === "ArrowRight" || e.code === "ArrowUp") {
+                e.preventDefault();
+                def.increase();
+                updateParamLabel(def);
+                return;
+            }
+            if (e.code === "ArrowLeft" || e.code === "ArrowDown") {
+                e.preventDefault();
+                def.decrease();
+                updateParamLabel(def);
+                return;
+            }
+        }
+
+        // Standalone shortcuts (only when no modifier held)
+        if (!activeParam) {
+            if (e.code === "Space")  { e.preventDefault(); launch(); }
+            if (e.code === "KeyC")   { e.preventDefault(); clearTraces(); }
+            if (e.code === "KeyR")   { e.preventDefault(); resetView(); }
+        }
+    });
+
+    window.addEventListener("keyup", e => {
+        if (e.code === activeParam) {
+            activeParam = null;
+            hideParamLabel();
+        }
     });
 
     // ── Physics step (Velocity-Verlet) ──
