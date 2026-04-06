@@ -838,11 +838,6 @@
             p.y *= R / r;
         }
 
-        // escape detection (very far away)
-        if (r > R * 50) {
-            p.alive = false;
-        }
-
         p.age += dt;
     }
 
