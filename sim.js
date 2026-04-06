@@ -239,7 +239,8 @@
         s.addEventListener("input", updateSliderDisplays)
     );
 
-    [speedSlider, altSlider].forEach(s =>
+    // Sliders interfere with the current preset
+    [speedSlider, altSlider, dirSlider].forEach(s =>
         s.addEventListener("input", unselectPresets)
     );
 
