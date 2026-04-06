@@ -662,19 +662,6 @@
     ];
     let colorIdx = 0;
 
-    function classifyOrbit(speed_km, alt_km) {
-        const r = R + alt_km * 1000;
-        const v1 = Math.sqrt(GM / r) / 1000;
-        const v2 = Math.sqrt(2 * GM / r) / 1000;
-        if (speed_km < v1 * 0.65) return { label: t("orbitSuborbital"),  color: "#ef4444" };
-        if (speed_km < v1 * 0.95) return { label: t("orbitLowElliptic"), color: "#f97316" };
-        if (speed_km < v1 * 1.05) return { label: t("orbitCircular"),    color: "#22c55e" };
-        if (speed_km < v2 * 0.95) return { label: t("orbitElliptic"),    color: "#eab308" };
-        if (speed_km < v2 * 1.01) return { label: t("orbitNearEscape"),  color: "#a855f7" };
-        if (speed_km < v2 * 1.05) return { label: t("orbitParabolic"),   color: "#3b82f6" };
-        return { label: t("orbitHyperbolic"), color: "#ec4899" };
-    }
-
     function launch() {
         const speed_km = parseFloat(speedSlider.value);         // km/s
         const alt_km   = parseFloat(altSlider.value);           // km
@@ -693,7 +680,6 @@
         const vx = speed * Math.cos(angleRad);
         const vy = speed * Math.sin(angleRad);
 
-        const cls = classifyOrbit(speed_km, alt_km);
         const color = trailColors[colorIdx % trailColors.length];
         colorIdx++;
 
@@ -704,18 +690,9 @@
             trail: [{ x, y }],
             alive: true,
             color,
-            label: cls.label,
-            labelColor: cls.color,
             age: 0,
             maxTrail: 80000,
         });
-
-        // Show orbit label
-        orbitLabel.textContent = cls.label + "  (" + speed_km.toFixed(1) + UNIT_SPEED + ")";
-        orbitLabel.style.color = cls.color;
-        orbitLabel.classList.add("visible");
-        clearTimeout(orbitLabel._timer);
-        orbitLabel._timer = setTimeout(() => orbitLabel.classList.remove("visible"), 3000);
 
         telemetrySection.style.display = "";
     }
